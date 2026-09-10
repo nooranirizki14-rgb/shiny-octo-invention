@@ -1,7 +1,9 @@
 /* ============================================================
-   Doodle District — Extended Menu System v0.2.0
+   Doodle District — Extended Menu System v0.2.1
    - Persistent tabs (PLAY / LOADOUT / PROFILE / SETTINGS / CHANGELOG / CREDITS)
-     that survive game re-renders (rendered OUTSIDE the game panel as an overlay)
+     rendered OUTSIDE the game panel as an overlay, so they survive every
+     re-render of the menu and stay up on all menu screens (only hidden
+     while a match is actually being played)
    - Solo setup: mode (Survival / Blitz / Juggernaut) + difficulty (Easy/Med/Hard)
    - Loadout: 40 weapons (10 rifle / 10 shotgun / 10 sniper / 10 blade) with 3D preview
    - Profile: banner, emblem, level + XP earned from matches
@@ -13,7 +15,7 @@
 /* Unlock the game's exposed API (game.js only exposes helpers when this exists) */
 window.__game = window.__game || {};
 
-var VERSION = '0.2.0';
+var VERSION = '0.2.1';
 var $ = function (s, r) { return (r || document).querySelector(s); };
 var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
 
@@ -154,6 +156,21 @@ function weaponById(slot, id) {
 
 /* ---------------- changelog data ---------------- */
 var CHANGELOG = [
+  { v: '0.2.1', date: '2026-09-10', title: 'Menu Tabs Stay Put',
+    sections: {
+      Fixed: [
+        'Tab buttons finally respond — the bar was swallowing its own clicks before the buttons could see them, so no tab would open',
+        'Tabs no longer disappear after playing a match: the bar now stays up on EVERY menu screen (main menu, PLAY ONLINE, lobby, PAUSED, ERASED, win screen) and only hides while you are actually playing',
+        'Clicking the empty strip beside a tab no longer leaks through to the game and starts a run',
+        '3D weapon preview can be dragged again and the sensitivity slider works (the old input shield blocked pointer events)',
+        'If the game rebuilds its HUD/menu, the tabs re-attach instead of dying silently'
+      ],
+      Improved: [
+        'Tab bar height is measured live, so the game menu never sits under it (phones where the bar wraps)',
+        'The bar is stacked above every game layer, so nothing can cover or block it',
+        'Profile numbers refresh the moment a match is scored; ESC closes an open tab'
+      ]
+    } },
   { v: '0.2.0', date: '2026-09-10', title: 'Loadouts, Harbor & Progression',
     sections: {
       Added: [
@@ -264,12 +281,15 @@ function awardMatch(kind, info, key) {
   }
   p.xp += xp;
   saveProfile(p);
+  /* an open PROFILE / SETUP tab should show the new numbers right away */
+  renderedFor = null;
   var after = levelForXP(p.xp);
   toast('+' + xp + ' XP  ·  ' + (kind === 'solo' ? ('WAVE ' + info.wave + ' · ' + info.kills + ' KILLS') : (info.kills + ' KILLS' + (info.win ? ' · VICTORY' : ''))));
   if (after.level > before) {
     setTimeout(function () { toast('★ LEVEL UP! You are now LEVEL ' + after.level + ' ★', 4); }, 1200);
   }
   refreshProfileChip();
+  setTimeout(function () { try { refreshChrome(); } catch (e) {} }, 0);
 }
 
 /* ---------------- loadout store ---------------- */
@@ -323,8 +343,16 @@ var TABS = [
   { id: 'credits', label: 'CREDITS' }
 ];
 
+/* Our chrome lives outside the game's #hud, but the game still has window level
+   listeners (audio unlock, ESC, mouse buttons). We only want to keep those from
+   seeing our clicks — never block our own widgets. So everything that "shields"
+   the game is registered in the BUBBLE phase on #dd-root (i.e. after the buttons
+   inside it already handled the event). The previous capture-phase
+   stopPropagation killed the tab buttons before they ever saw a click. */
+function shield(e) { try { e.stopPropagation(); } catch (err) {} }
+
 function buildChrome() {
-  if (rootEl) return;
+  if (rootEl && rootEl.parentNode) return;
   rootEl = document.createElement('div');
   rootEl.id = 'dd-root';
   rootEl.innerHTML =
@@ -338,24 +366,33 @@ function buildChrome() {
     '<div id="dd-overlay" hidden><div class="dd-panel" id="dd-panel"></div></div>' +
     '<div id="dd-toasts"></div>';
   document.body.appendChild(rootEl);
+  tabsBandDirty = true;
   tabsEl = $('#dd-tabs');
   overlayEl = $('#dd-overlay');
   panelEl = $('#dd-panel');
   toastBox = $('#dd-toasts');
 
+  /* --- tab bar: delegate from the bar, in the bubble phase, no shielding --- */
   tabsEl.addEventListener('click', function (e) {
-    var b = e.target.closest('.dd-tab');
+    var t = e.target;
+    var b = t && t.closest ? t.closest('.dd-tab') : null;
     if (b) { switchTab(b.dataset.tab); return; }
-    if (e.target.closest('#dd-chip')) switchTab('profile');
+    if (t && t.closest && t.closest('#dd-chip')) switchTab('profile');
+  });
+  /* keyboard access: the bar is just buttons, Enter/Space should work */
+  tabsEl.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && (currentTab !== 'play' || setupOpen)) switchTab('play');
   });
   overlayEl.addEventListener('click', function (e) {
     if (e.target === overlayEl && !setupOpen) switchTab('play');
-    e.stopPropagation();
   });
-  overlayEl.addEventListener('pointerdown', function (e) { e.stopPropagation(); }, true);
-  overlayEl.addEventListener('keydown', function (e) { e.stopPropagation(); });
-  tabsEl.addEventListener('pointerdown', function (e) { e.stopPropagation(); }, true);
-  tabsEl.addEventListener('click', function (e) { e.stopPropagation(); }, true);
+  overlayEl.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { if (setupOpen) closeSetup(); else switchTab('play'); }
+  });
+  /* shield the game from anything that happened inside our chrome (bubble = safe) */
+  ['pointerdown', 'mousedown', 'mouseup', 'click', 'dblclick', 'contextmenu', 'wheel', 'keydown', 'keyup', 'keypress'].forEach(function (type) {
+    rootEl.addEventListener(type, shield, false);
+  });
   refreshProfileChip();
 }
 
@@ -377,10 +414,47 @@ function isMainMenu() {
   var p = gamePanel();
   return !!(p && p.querySelector('#soloBtn'));
 }
+/* True only while the player is actually controlling the doodler. The game
+   shows #screen for every menu-ish page: main menu, PLAY ONLINE, lobby,
+   PAUSED, ERASED, YOU WIN — that whole set is where our tabs must live. */
+function inActiveMatch() {
+  try {
+    var g = window.__game, y = g && g.game;
+    if (!y) return false;
+    var st = y.state;
+    return (st === 'play' || st === 'dying') && !y.menu;
+  } catch (e) { return false; }
+}
+function chromeShouldShow() {
+  /* "stay forever": previously the bar only existed on the main menu (it looked
+     for #soloBtn), so it vanished for good on the match-over / online / lobby /
+     pause screens. Any screen the game shows keeps the tabs alive. */
+  if (!screenVisible()) return false;
+  return !inActiveMatch();
+}
+
+/* bottom edge of the tab bar, in viewport px — clicks that fall in that band
+   must never reach the game's full-screen "CLICK ANYWHERE TO PLAY" layer */
+var tabsBandBottom = 0, tabsBandDirty = true;
+function syncTabsOffset() {
+  if (!tabsBandDirty) return;
+  try {
+    var inner = tabsEl && tabsEl.firstElementChild;
+    var r = inner && inner.getBoundingClientRect ? inner.getBoundingClientRect() : null;
+    var bottom = r && r.height ? Math.round(r.bottom) : 0;
+    if (bottom > 0 && bottom < (window.innerHeight || 900) * 0.6) {
+      tabsBandBottom = bottom + 8;
+      document.documentElement.style.setProperty('--dd-tabs-h', (tabsBandBottom + 14) + 'px');
+      tabsBandDirty = false;
+    }
+  } catch (e) {}
+}
 
 function refreshChrome() {
+  if (!rootEl || !rootEl.parentNode) { rootEl = null; buildChrome(); }
   if (!tabsEl || !overlayEl) return;
-  var show = screenVisible() && isMainMenu();
+  var show = chromeShouldShow();
+  if (show !== !tabsEl.hidden) tabsBandDirty = true; /* just appeared → re-measure */
   tabsEl.hidden = !show;
   try { document.body.classList.toggle('dd-tabs-on', !!show); } catch (e) {}
   if (!show) {
@@ -389,6 +463,7 @@ function refreshChrome() {
     stopPreview();
     return;
   }
+  syncTabsOffset();
   $$('.dd-tab', tabsEl).forEach(function (b) {
     b.classList.toggle('active', b.dataset.tab === (setupOpen ? 'play' : currentTab));
   });
@@ -1063,21 +1138,41 @@ function parseEndScreens() {
   } catch (e) {}
 }
 
-/* ---------------- observers ---------------- */
-function watchGame() {
+/* ---------------- observers ----------------
+   The bar is driven off the game's own DOM (#screen / #panel). If the game ever
+   rebuilds those nodes, the old observers would point at detached elements and
+   the tabs would freeze or stay hidden — so node identity is re-checked
+   continuously and the observers are re-attached. */
+var observedNodes = { hud: null, panel: null, screen: null };
+var observers = [];
+function ensureObservers() {
   var hud = $('#hud'), panel = $('#panel'), screen = $('#screen');
-  if (!hud || !panel || !screen) {
-    setTimeout(watchGame, 300);
-    return;
-  }
-  var mo = new MutationObserver(function () { refreshChrome(); parseEndScreens(); });
-  mo.observe(panel, { childList: true, subtree: false });
-  var mo2 = new MutationObserver(function () { refreshChrome(); parseEndScreens(); });
-  mo2.observe(screen, { attributes: true, attributeFilter: ['class'] });
-  var mo3 = new MutationObserver(function () { refreshChrome(); });
-  mo3.observe(hud, { attributes: true, attributeFilter: ['class'] });
+  if (!hud || !panel || !screen) return false;
+  if (observedNodes.hud === hud && observedNodes.panel === panel && observedNodes.screen === screen) return true;
+  observers.forEach(function (o) { try { o.disconnect(); } catch (e) {} });
+  observers = [];
+  observedNodes = { hud: hud, panel: panel, screen: screen };
+  var bump = function (withEnd) {
+    return new MutationObserver(function () {
+      ensureObservers();
+      refreshChrome();
+      if (withEnd) parseEndScreens();
+    });
+  };
+  observers.push((function () { var o = bump(true); o.observe(panel, { childList: true, subtree: true }); return o; })());
+  /* #screen.show on/off = "menu up" vs "in match" — this is what keeps the bar alive */
+  observers.push((function () { var o = bump(true); o.observe(screen, { attributes: true, attributeFilter: ['class'] }); return o; })());
+  observers.push((function () { var o = bump(false); o.observe(hud, { attributes: true, childList: true, subtree: false, attributeFilter: ['class'] }); return o; })());
+  return true;
+}
+
+function watchGame() {
+  if (!ensureObservers()) { setTimeout(watchGame, 300); return; }
+  window.addEventListener('resize', function () { tabsBandBottom = 0; tabsBandDirty = true; refreshChrome(); });
   refreshChrome();
-  setInterval(function () { refreshChrome(); parseEndScreens(); }, 2500);
+  /* safety net: re-assert the bar periodically so it can never stay hidden
+     because an observer missed a mutation */
+  setInterval(function () { ensureObservers(); refreshChrome(); parseEndScreens(); }, 1500);
 }
 
 /* intercept solo start → open setup instead */
@@ -1090,6 +1185,27 @@ function armSoloIntercept() {
       if (sb) { e.preventDefault(); e.stopPropagation(); openSetup(1); return; }
       var cp = e.target.closest ? e.target.closest('.checkpoints button') : null;
       if (cp) { e.preventDefault(); e.stopPropagation(); openSetup(Number(cp.dataset.cp) || 1); return; }
+    } catch (err) {}
+  }, true);
+}
+
+/* The game's menu layer (#screen) is a full-viewport "click anywhere and play"
+   surface. Our tab bar floats on top of it, but the transparent strip around the
+   bar is not a click target, so a click that misses a tab by a few pixels used to
+   drop through and start (or restart) a match — which is exactly what made the
+   tabs look broken: you clicked, the game ate it and the bar went away. */
+function armTabBandGuard() {
+  document.addEventListener('click', function (e) {
+    try {
+      if (!tabsBandBottom || !tabsEl || tabsEl.hidden) return;
+      var t = e.target;
+      if (!t || !t.closest) return;
+      if (t.closest('#dd-root')) return;                 /* our own UI */
+      /* real controls always keep working — only the dead backdrop is swallowed */
+      if (t.closest('button, input, select, textarea, a, label')) return;
+      var scr = gameScreen();
+      if (!scr || !scr.contains(t)) return;              /* not the game's click-to-play layer */
+      if (e.clientY > 0 && e.clientY <= tabsBandBottom) { e.stopPropagation(); e.preventDefault(); }
     } catch (err) {}
   }, true);
 }
@@ -1127,6 +1243,7 @@ function setupMobile() {
 function init() {
   buildChrome();
   armSoloIntercept();
+  armTabBandGuard();
   setupMobile();
   setLoadout(getLoadout()); /* ensure derived stats exist for the game */
   if (document.readyState === 'loading') {
@@ -1143,6 +1260,9 @@ window.GameMenuSystem = {
   version: VERSION,
   init: init,
   switchTab: switchTab,
+  refresh: refreshChrome,
+  isMainMenu: isMainMenu,
+  tabsVisible: function () { return !!(tabsEl && !tabsEl.hidden); },
   getProfile: getProfile,
   levelForXP: levelForXP,
   getLoadout: getLoadout,
