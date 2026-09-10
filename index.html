@@ -7,24 +7,44 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Caveat:wght@600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.A4A8BF44.css">
-<link rel="stylesheet" href="menu-addon.css?v=3.0.0">
-<script type="importmap">
-{ "imports": {
-  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
-  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
-} }
+<link rel="stylesheet" href="menu-addon.css?v=3.0.1">
+<!-- Boot loader: loading screen + plain-language error overlay, so a failed
+     boot can never look like a blank page again. Must run first. -->
+<script src="boot.js?v=3.0.1"></script>
+<!-- Import map for three.js. Injected by script (instead of a static tag) so
+     the boot overlay can offer a one-click alternate-CDN fallback: the choice
+     is stored in localStorage 'dd_cdn' ('jsdelivr' default, 'unpkg' alt).
+     This runs synchronously in <head>, before any module loads. -->
+<script>
+(function () {
+  try {
+    var choice = 'jsdelivr';
+    try { if (localStorage.getItem('dd_cdn') === 'unpkg') choice = 'unpkg'; } catch (e) {}
+    var base = choice === 'unpkg'
+      ? 'https://unpkg.com/three@0.170.0/'
+      : 'https://cdn.jsdelivr.net/npm/three@0.170.0/';
+    var el = document.createElement('script');
+    el.type = 'importmap';
+    el.textContent = JSON.stringify({ imports: {
+      'three': base + 'build/three.module.js',
+      'three/addons/': base + 'examples/jsm/'
+    } });
+    document.head.appendChild(el);
+  } catch (e) { /* boot.js watchdog will explain what went wrong */ }
+})();
 </script>
 </head>
 <body>
 <canvas id="c"></canvas>
 <div id="hud"></div>
+<noscript><div style="position:fixed;inset:0;background:#f6f3e6;color:#1a30c0;display:flex;align-items:center;justify-content:center;font-family:cursive;font-size:24px;text-align:center;padding:20px;">Doodle District needs JavaScript enabled to run.<br>Please enable JavaScript and reload.</div></noscript>
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <!-- ?v= busts stale cached copies of the fixed menu (tabs used to break / vanish) -->
-<script src="supabase-sync.js?v=3.0.0"></script>
-<script src="menu-system.js?v=3.0.0"></script>
-<script src="rocket-launcher.js?v=3.0.0"></script>
-<script src="tutorial.js?v=3.0.0"></script>
-<script type="module" src="game.7LCERBLR.js?v=3.0.0"></script>
+<script src="supabase-sync.js?v=3.0.1"></script>
+<script src="menu-system.js?v=3.0.1"></script>
+<script src="rocket-launcher.js?v=3.0.1"></script>
+<script src="tutorial.js?v=3.0.1"></script>
+<script type="module" src="game.7LCERBLR.js?v=3.0.1"></script>
 <!-- Vercel Web Analytics: collects page views once Analytics is enabled on the project; harmless elsewhere -->
 <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
 <script defer src="_vercel/insights/script.js.br"></script>

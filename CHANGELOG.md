@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.1] — Fix: Blank Screen on Load
+
+### Fixed
+- The game can no longer fail silently to a blank page: a loading screen now shows instantly, and if anything goes wrong you get a plain-language explanation instead of nothing
+- Loader now diagnoses the usual culprits: opening the file directly (`file://`), offline/blocked CDN, missing WebGL2, or an outdated browser
+- One-click alternate-CDN fallback (jsdelivr ⇄ unpkg) when the 3D engine fails to download
+
 ## [3.0.0] — Final Big Update
 
 ### Added
