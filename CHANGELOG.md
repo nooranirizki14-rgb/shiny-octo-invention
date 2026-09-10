@@ -1,5 +1,33 @@
 # Changelog
 
+## [2.3] - 2026-09-10 — Secret Weapons & the Lightsaber
+
+### Added
+- **LIGHTSABER** — a new secret blade-slot weapon. Instead of the usual sketchy
+  ink blade it renders a plain glowing plasma edge (colored to its ink slot)
+  with a simple hilt. Unlocked only by its own dedicated redeem code.
+- **3 more easter-egg / secret weapons**, each unlockable only via its own
+  dedicated redeem code (never bundled with anything else):
+  - `THE ONE PEN` — secret rifle
+  - `HALL PASS` — secret shotgun
+  - `HALL MONITOR` — secret sniper
+- **Redeem code table** (below) — the full, current list of every redeem code
+  in the game and what it grants.
+
+### Redeem code list
+
+| Code | Unlocks | Description |
+|---|---|---|
+| `ZWOZGOLD` | Weapons: Golden Quill, Golden Blunderbuss, Golden Longshot, Golden Edge · Banner: Golden Doodle · +500 XP | The full golden arsenal + Golden Doodle banner + 500 XP |
+| `DOODLEVIP` | Banner: Golden Doodle · Emblem: Doodle Royalty | Golden Doodle banner + Doodle Royalty emblem |
+| `GHOSTMODE` | Emblems: Ghost Doodle, Grim Sketch · +150 XP | Ghost Doodle + Grim Sketch emblems + 150 XP |
+| `FIRESTARTER` | Emblem: Hot Ink · Weapon: Golden Edge (katana) · +250 XP | Hot Ink emblem + Golden Edge katana + 250 XP |
+| `WELCOME2026` | +300 XP | 300 XP, on the house |
+| `USETHEFORCE` | Weapon: **Lightsaber** (blade, secret) | An elegant weapon, for a more civilized doodle |
+| `DETENTION` | Weapon: **The One Pen** (rifle, secret) | Forged in the fires of detention |
+| `NORUNNING` | Weapon: **Hall Pass** (shotgun, secret) | Never questioned, never denied |
+| `EYESEVERYWHERE` | Weapon: **Hall Monitor** (sniper, secret) | Sees everything, forgets nothing |
+
 ## [2.2] - 2026-09-10 — Skyline, Golden Gear & Redeem Codes
 
 ### Added

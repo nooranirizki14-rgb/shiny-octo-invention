@@ -15,7 +15,7 @@
 /* Unlock the game's exposed API (game.js only exposes helpers when this exists) */
 window.__game = window.__game || {};
 
-var VERSION = '2.2';
+var VERSION = '2.3';
 var $ = function (s, r) { return (r || document).querySelector(s); };
 var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
 
@@ -79,7 +79,9 @@ rifle: [
  { id: 'rifle_fountain', name: 'FOUNTAINHEAD', hint: 'masterwork · smooth & deadly', desc: 'A fountain pen fit for a doodle master. Superb all-round.', ink: 2, scale: 1.06, bars: [70, 80, 65, 78],
    stats: { magSize: 40, reserve: 200, maxReserve: 400, interval: 0.0833, damage: 30, headMul: 3, pellets: 1, spread: 0.012, adsSpread: 0.0025, reloadDur: 1.4, auto: true, falloff: null, pvp: [24, 2, null] } },
  { id: 'rifle_golden', name: 'GOLDEN QUILL', hint: 'redeem-only · legendary scribe', desc: 'A legendary quill dipped in gold ink. Unlocked only by redeem code.', ink: 5, scale: 1.04, bars: [80, 82, 70, 82], special: true,
-   stats: { magSize: 40, reserve: 240, maxReserve: 480, interval: 0.08, damage: 32, headMul: 3.2, pellets: 1, spread: 0.01, adsSpread: 0.002, reloadDur: 1.3, auto: true, falloff: null, pvp: [26, 2.2, null] } }
+   stats: { magSize: 40, reserve: 240, maxReserve: 480, interval: 0.08, damage: 32, headMul: 3.2, pellets: 1, spread: 0.01, adsSpread: 0.002, reloadDur: 1.3, auto: true, falloff: null, pvp: [26, 2.2, null] } },
+ { id: 'rifle_onepen', name: 'THE ONE PEN', hint: 'secret · one does not simply run dry', desc: 'Forged in the fires of detention. Legend says it never truly reloads. Easter-egg weapon, redeem-only.', ink: 2, scale: 1.1, bars: [85, 60, 90, 88], special: true,
+   stats: { magSize: 45, reserve: 270, maxReserve: 450, interval: 0.075, damage: 34, headMul: 3, pellets: 1, spread: 0.008, adsSpread: 0.0015, reloadDur: 1.3, auto: true, falloff: null, pvp: [27, 2, null] } }
 ],
 shotgun: [
  { id: 'shotgun_classic', name: 'CLASSIC SHOTGUN', hint: 'pump · devastating up close', desc: 'The classic pump-action page clearer. Ten pellets of nope.', ink: 0, scale: 1, bars: [80, 30, 40, 25],
@@ -103,7 +105,9 @@ shotgun: [
  { id: 'shotgun_fullstop', name: 'FULL STOP.', hint: 'ends sentences · and enemies', desc: 'The final word in close-range arguments. Fourteen pellets. Period.', ink: 1, scale: 1.12, bars: [100, 15, 25, 30],
    stats: { magSize: 4, reserve: 32, maxReserve: 64, interval: 1.1, damage: 26, headMul: 2, pellets: 14, spread: 0.045, adsSpread: 0.025, reloadDur: 0.55, auto: false, falloff: [12, 34, 0.25], cycleDur: 0.65, pvp: [22, 1.8, [10, 28, 0.15]] } },
  { id: 'shotgun_golden', name: 'GOLDEN BLUNDERBUSS', hint: 'redeem-only · legendary boom', desc: 'A ceremonial gold-plated boomstick. Unlocked only by redeem code.', ink: 5, scale: 1.08, bars: [92, 26, 35, 32], special: true,
-   stats: { magSize: 6, reserve: 42, maxReserve: 84, interval: 0.75, damage: 22, headMul: 2, pellets: 12, spread: 0.055, adsSpread: 0.03, reloadDur: 0.45, auto: false, falloff: [12, 34, 0.24], cycleDur: 0.5, pvp: [19, 1.8, [10, 28, 0.15]] } }
+   stats: { magSize: 6, reserve: 42, maxReserve: 84, interval: 0.75, damage: 22, headMul: 2, pellets: 12, spread: 0.055, adsSpread: 0.03, reloadDur: 0.45, auto: false, falloff: [12, 34, 0.24], cycleDur: 0.5, pvp: [19, 1.8, [10, 28, 0.15]] } },
+ { id: 'shotgun_hallpass', name: 'HALL PASS', hint: 'secret · never questioned', desc: 'Rumored to let you go anywhere and delete anything without a second glance. Easter-egg weapon, redeem-only.', ink: 4, scale: 1.05, bars: [85, 40, 45, 30], special: true,
+   stats: { magSize: 8, reserve: 56, maxReserve: 112, interval: 0.6, damage: 24, headMul: 2, pellets: 12, spread: 0.048, adsSpread: 0.026, reloadDur: 0.4, auto: false, falloff: [13, 36, 0.26], cycleDur: 0.38, pvp: [20, 1.8, [11, 30, 0.16]] } }
 ],
 sniper: [
  { id: 'sniper_classic', name: 'CLASSIC SNIPER', hint: 'scoped bolt action · one shot, one erasure', desc: 'The classic scoped bolt-action. Patience rewarded with erasure.', ink: 0, scale: 1, bars: [95, 20, 30, 100],
@@ -127,7 +131,9 @@ sniper: [
  { id: 'sniper_headline', name: 'HEADLINE', hint: 'boss deleter · 260 dmg', desc: 'Front-page news: LOCAL BOSS ERASED. Slow, loud, final.', ink: 1, scale: 1.12, bars: [100, 10, 18, 100],
    stats: { magSize: 3, reserve: 18, maxReserve: 36, interval: 0.35, damage: 260, headMul: 3, pellets: 1, spread: 0.1, adsSpread: 0.0004, reloadDur: 2.8, auto: false, falloff: null, cycleDur: 1.4, adsFov: 14, pvp: [220, 1.5, null] } },
  { id: 'sniper_golden', name: 'GOLDEN LONGSHOT', hint: 'redeem-only · legendary scope', desc: 'A gilded masterpiece of a rifle. Unlocked only by redeem code.', ink: 5, scale: 1.05, bars: [96, 22, 30, 98], special: true,
-   stats: { magSize: 5, reserve: 25, maxReserve: 50, interval: 0.19, damage: 165, headMul: 3.2, pellets: 1, spread: 0.06, adsSpread: 0.0003, reloadDur: 2, auto: false, falloff: null, cycleDur: 0.8, adsFov: 20, pvp: [165, 1.6, null] } }
+   stats: { magSize: 5, reserve: 25, maxReserve: 50, interval: 0.19, damage: 165, headMul: 3.2, pellets: 1, spread: 0.06, adsSpread: 0.0003, reloadDur: 2, auto: false, falloff: null, cycleDur: 0.8, adsFov: 20, pvp: [165, 1.6, null] } },
+ { id: 'sniper_hallmonitor', name: 'HALL MONITOR', hint: 'secret · sees everything', desc: 'Whispered about between classes. It never misses and it never forgets a face. Easter-egg weapon, redeem-only.', ink: 3, scale: 1.06, bars: [98, 18, 24, 100], special: true,
+   stats: { magSize: 5, reserve: 25, maxReserve: 50, interval: 0.17, damage: 180, headMul: 3.4, pellets: 1, spread: 0.055, adsSpread: 0.0002, reloadDur: 1.9, auto: false, falloff: null, cycleDur: 0.75, adsFov: 18, pvp: [180, 1.6, null] } }
 ],
 katana: [
  { id: 'katana_classic', name: 'CLASSIC KATANA', hint: 'slash · hold aim to block & return bullets', desc: 'The classic page slicer. Block bullets, return them with interest.', ink: 0, scale: 1, bars: [70, 65, 100, 15],
@@ -151,7 +157,9 @@ katana: [
  { id: 'katana_eraserblade', name: 'ERASERBLADE', hint: 'balanced soul of ink', desc: 'Half blade, half eraser. A duelist\'s perfect companion.', ink: 4, scale: 1, bars: [80, 68, 100, 16],
    stats: { damage: 90, slashDur: 0.26 } },
  { id: 'katana_golden', name: 'GOLDEN EDGE', hint: 'redeem-only · legendary blade', desc: 'A blade forged from pure gold ink. Unlocked only by redeem code.', ink: 5, scale: 1.05, bars: [88, 72, 100, 18], special: true,
-   stats: { damage: 100, slashDur: 0.25 } }
+   stats: { damage: 100, slashDur: 0.25 } },
+ { id: 'katana_lightsaber', name: 'LIGHTSABER', hint: 'secret · an elegant weapon, for a more civilized doodle', desc: 'From a galaxy of margin doodles far, far away. A humming blade of pure light. Easter-egg weapon, redeem-only.', ink: 0, scale: 1.1, bars: [100, 90, 100, 20], special: true, saber: true,
+   stats: { damage: 110, slashDur: 0.22 } }
 ]};
 
 var SLOT_LABEL = { rifle: 'RIFLE', shotgun: 'SHOTGUN', sniper: 'SNIPER', katana: 'BLADE' };
@@ -164,6 +172,15 @@ function weaponById(slot, id) {
 
 /* ---------------- changelog data ---------------- */
 var CHANGELOG = [
+  { v: '2.3', date: '2026-09-10', title: 'Secret Weapons & the Lightsaber',
+    sections: {
+      Added: [
+        'LIGHTSABER — a secret blade-slot weapon with a glowing plasma edge instead of ink. Redeem-only.',
+        '3 more secret easter-egg weapons: THE ONE PEN (rifle), HALL PASS (shotgun) and HALL MONITOR (sniper) — each unlockable only via its own dedicated redeem code',
+        'Redeem code reference table added to the changelog, listing every code and what it unlocks'
+      ]
+    }
+  },
   { v: '2.2', date: '2026-09-10', title: 'Skyline, Golden Gear & Redeem Codes',
     sections: {
       Added: [
@@ -371,7 +388,11 @@ var REDEEM_CODES = {
   'DOODLEVIP': { banners: ['b9'], emblems: ['crown'], desc: 'Golden Doodle banner + Doodle Royalty emblem' },
   'GHOSTMODE': { emblems: ['ghost', 'skull2'], xp: 150, desc: 'Ghost Doodle + Grim Sketch emblems + 150 XP' },
   'FIRESTARTER': { emblems: ['fire'], weapons: ['katana_golden'], xp: 250, desc: 'Hot Ink emblem + Golden Edge katana + 250 XP' },
-  'WELCOME2026': { xp: 300, desc: '300 XP, on the house' }
+  'WELCOME2026': { xp: 300, desc: '300 XP, on the house' },
+  'USETHEFORCE': { weapons: ['katana_lightsaber'], desc: 'the LIGHTSABER — an elegant weapon, for a more civilized doodle' },
+  'DETENTION': { weapons: ['rifle_onepen'], desc: 'THE ONE PEN, secret rifle easter-egg' },
+  'NORUNNING': { weapons: ['shotgun_hallpass'], desc: 'the HALL PASS, secret shotgun easter-egg' },
+  'EYESEVERYWHERE': { weapons: ['sniper_hallmonitor'], desc: 'the HALL MONITOR, secret sniper easter-egg' }
 };
 
 function redeemCode(raw) {
@@ -939,6 +960,7 @@ function bladeChain(T, g, mat, totalLen, width, thick, startY, startZ, curveTota
   return { endY: y, endZ: z };
 }
 function buildBlade(T, def, i, M) {
+  if (def.saber) return buildSaber(T, def, i, M);
   var g = new T.Group(), acc = accentMat(T, def);
   var blen = 0.95 + (i % 5) * 0.09 + (i === 2 || i === 8 ? 0.15 : 0);
   var bw = 0.05 + (i % 3) * 0.012 + (i === 8 ? 0.03 : 0);
@@ -956,6 +978,30 @@ function buildBlade(T, def, i, M) {
   for (var r = 0; r < 4; r++) cy(T, g, acc, 0.037, 0.037, 0.025, 0, 0, 0.03 + r * 0.075, Math.PI / 2);
   var pom = new T.Mesh(new T.SphereGeometry(0.04, 10, 8), M.dark);
   pom.position.set(0, 0, 0.33); g.add(pom);
+  outline(T, g, M.line);
+  return g;
+}
+/* Plain glowing cylinder blade + simple hilt for the lightsaber easter-egg
+   weapon — deliberately skips the sketchy ink-blade look (no groove, no
+   guard, no wraps) so it reads as a distinct sci-fi weapon, colored by the
+   weapon's ink slot. */
+function buildSaber(T, def, i, M) {
+  var g = new T.Group();
+  var glowColor = INK_HEX[def.ink] || '#1a30c0';
+  var core = new T.MeshBasicMaterial({ color: 0xffffff });
+  var glow = new T.MeshBasicMaterial({ color: glowColor });
+  var blen = 1.05;
+  cy(T, g, glow, 0.026, 0.026, blen, 0, 0.02, -0.16 - blen / 2, Math.PI / 2, 0, 16);
+  cy(T, g, core, 0.011, 0.011, blen * 0.98, 0, 0.02, -0.16 - blen / 2, Math.PI / 2, 0, 16);
+  var tip = new T.Mesh(new T.SphereGeometry(0.026, 12, 10), glow);
+  tip.position.set(0, 0.02, -0.16 - blen); g.add(tip);
+  cy(T, g, M.dark, 0.034, 0.034, 0.34, 0, 0, 0.12, Math.PI / 2, 0, 16);
+  var accentRing = new T.MeshStandardMaterial({ color: glowColor, roughness: 0.4, metalness: 0.5 });
+  cy(T, g, accentRing, 0.038, 0.038, 0.03, 0, 0, -0.06, Math.PI / 2, 0, 16);
+  cy(T, g, accentRing, 0.038, 0.038, 0.03, 0, 0, 0.02, Math.PI / 2, 0, 16);
+  for (var r = 0; r < 3; r++) cy(T, g, M.body, 0.036, 0.036, 0.02, 0, 0, 0.18 + r * 0.05, Math.PI / 2, 0, 16);
+  var pom = new T.Mesh(new T.SphereGeometry(0.036, 10, 8), M.dark);
+  pom.position.set(0, 0, 0.3); g.add(pom);
   outline(T, g, M.line);
   return g;
 }
