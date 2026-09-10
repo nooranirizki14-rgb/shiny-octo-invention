@@ -15,7 +15,7 @@
 /* Unlock the game's exposed API (game.js only exposes helpers when this exists) */
 window.__game = window.__game || {};
 
-var VERSION = '2.3.2';
+var VERSION = '3.0.0';
 var $ = function (s, r) { return (r || document).querySelector(s); };
 var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
 
@@ -160,9 +160,25 @@ katana: [
    stats: { damage: 100, slashDur: 0.25 } },
  { id: 'katana_lightsaber', name: 'LIGHTSABER', hint: 'secret · an elegant weapon, for a more civilized doodle', desc: 'From a galaxy of margin doodles far, far away. A humming blade of pure light. Easter-egg weapon, redeem-only.', ink: 0, scale: 1.1, bars: [100, 90, 100, 20], special: true, saber: true,
    stats: { damage: 110, slashDur: 0.22 } }
+],
+explosive: [
+ { id: 'explosive_rocket', name: 'ROCKET LAUNCHER', hint: 'press F · AoE explosion + rocket jump', desc: 'A doodle rocket launcher. Fire at enemies for explosive AoE damage, or fire at your feet to rocket-jump. Costs HP to jump.', ink: 1, scale: 1, bars: [80, 20, 30, 50],
+   stats: { damage: 80, blastRadius: 6, rockets: 3, selfDamagePct: 0.07, cooldown: 2.0 } }
 ]};
 
-var SLOT_LABEL = { rifle: 'RIFLE', shotgun: 'SHOTGUN', sniper: 'SNIPER', katana: 'BLADE' };
+var SLOT_LABEL = { rifle: 'RIFLE', shotgun: 'SHOTGUN', sniper: 'SNIPER', katana: 'BLADE', explosive: 'ROCKET' };
+
+/* ---------------- characters ---------------- */
+var CHARACTERS = [
+  { id: 'default', name: 'DOODLER', icon: '✎', desc: 'The standard scribbler. No bonuses, no penalties.', bonuses: 'Balanced · no modifiers' },
+  { id: 'boom', name: 'BOOM', icon: '☠', desc: 'A walking explosion with a fuse for a fuse. Loves things that go boom.', bonuses: 'Rocket jump: 3% HP (was 7%) · +20% explosive damage', rocketDmgPct: 0.03, explosiveBuff: 1.2 }
+];
+function getCharacter() { return store.get('doodle_character', 'default'); }
+function setCharacter(id) { store.set('doodle_character', id); }
+function characterById(id) {
+  for (var i = 0; i < CHARACTERS.length; i++) if (CHARACTERS[i].id === id) return CHARACTERS[i];
+  return CHARACTERS[0];
+}
 
 function weaponById(slot, id) {
   var list = WEAPONS[slot] || [];
@@ -172,7 +188,25 @@ function weaponById(slot, id) {
 
 /* ---------------- changelog data ---------------- */
 var CHANGELOG = [
-  { v: '2.3.2', date: '2026-09-10', title: 'Fix: secret weapons now actually change how the blade looks',
+  { v: '3.0.0', date: '2026-09-10', title: 'Final Big Update',
+    sections: {
+      Added: [
+        'Tutorial: guided practice arena with a dummy — learn movement, shooting, melee swings and rocket-jumping',
+        'Persistent save sync (Supabase): cloud-backed saves for profile, loadout, unlocks and stats. Configure in Settings → Cloud Sync',
+        'Leaderboard (RANKS tab): global solo and multiplayer K/D rankings',
+        'New map: Doodle Bounce (replaces Skyline) — balloon houses and trampoline pads for big air',
+        'Rocket Launcher: press F to fire explosive rockets. Rocket-jump by firing at the ground (costs HP)',
+        'New character: Boom — reduces rocket-jump self-damage to 3% and buffs explosive damage +20%',
+        'Multiplayer death camera: camera follows your killer for 3 seconds before respawn',
+        'Doodle Harbor rebuilt with improved layout and visuals'
+      ],
+      Changed: [
+        'Version numbering cleaned up to a sequential scheme (1.0.0 → 1.1.0 → 1.1.1 → 1.2.0 → 2.0.0 → 2.0.1 → 3.0.0)',
+        'Game API now exposed on all hosts for better menu integration'
+      ]
+    }
+  },
+  { v: '2.0.1', date: '2026-09-10', title: 'Fix: Secret Weapons Look Different In-Game',
     sections: {
       Fixed: [
         'Blade-slot weapons (including LIGHTSABER, GOLDEN EDGE, and every katana skin) now correctly change appearance in real matches — previously the equipped skin/ink never reached the in-game 3D model, so every blade rendered identically no matter what you had equipped',
@@ -180,7 +214,7 @@ var CHANGELOG = [
       ]
     }
   },
-  { v: '2.3', date: '2026-09-10', title: 'Secret Weapons & the Lightsaber',
+  { v: '2.0.0', date: '2026-09-10', title: 'Secret Weapons & the Lightsaber',
     sections: {
       Added: [
         'LIGHTSABER — a secret blade-slot weapon with a glowing plasma edge instead of ink. Redeem-only.',
@@ -189,7 +223,7 @@ var CHANGELOG = [
       ]
     }
   },
-  { v: '2.2', date: '2026-09-10', title: 'Skyline, Golden Gear & Redeem Codes',
+  { v: '1.2.0', date: '2026-09-10', title: 'Skyline, Golden Gear & Redeem Codes',
     sections: {
       Added: [
         'NEW MAP: Doodle Skyline — rooftop parkour across doodle skyscrapers, water tanks, billboards and neon signs (solo + online)',
@@ -207,7 +241,7 @@ var CHANGELOG = [
         'Credits now correctly attribute the game to Zwoz'
       ]
     } },
-  { v: '0.2.1', date: '2026-09-10', title: 'Menu Tabs Stay Put',
+  { v: '1.1.1', date: '2026-09-10', title: 'Menu Tabs Stay Put',
     sections: {
       Fixed: [
         'Tab buttons finally respond — the bar was swallowing its own clicks before the buttons could see them, so no tab would open',
@@ -222,7 +256,7 @@ var CHANGELOG = [
         'Profile numbers refresh the moment a match is scored; ESC closes an open tab'
       ]
     } },
-  { v: '0.2.0', date: '2026-09-10', title: 'Loadouts, Harbor & Progression',
+  { v: '1.1.0', date: '2026-09-10', title: 'Loadouts, Harbor & Progression',
     sections: {
       Added: [
         'LOADOUT tab: 40 weapons — 10 rifles, 10 shotguns, 10 snipers, 10 blades, each with unique stats and a 3D model preview',
@@ -243,7 +277,7 @@ var CHANGELOG = [
         'Fixed PLAY buttons not responding while menu tabs were active'
       ]
     } },
-  { v: '0.1.0', date: '2026-09-10', title: 'Initial Release',
+  { v: '1.0.0', date: '2026-09-10', title: 'Initial Release',
     sections: {
       Added: [
         'Credits system with proper attribution to Zwoz',
@@ -362,6 +396,7 @@ function awardMatch(kind, info, key) {
     setTimeout(function () { toast('★ LEVEL UP! You are now LEVEL ' + after.level + ' ★', 4); }, 1200);
   }
   refreshProfileChip();
+  if (window.__ddSync) { try { window.__ddSync.submitMatchResult({ kind: kind, kills: info.kills, deaths: info.deaths || 0, wave: info.wave, score: info.score, win: info.win }); window.__ddSync.syncToCloud(); } catch (e) {} }
   setTimeout(function () { try { refreshChrome(); } catch (e) {} }, 0);
 }
 
@@ -442,7 +477,7 @@ function redeemCode(raw) {
 
 /* ---------------- loadout store ---------------- */
 function defaultLoadout() {
-  return { rifle: 'rifle_classic', shotgun: 'shotgun_classic', sniper: 'sniper_classic', katana: 'katana_classic' };
+  return { rifle: 'rifle_classic', shotgun: 'shotgun_classic', sniper: 'sniper_classic', katana: 'katana_classic', explosive: 'explosive_rocket' };
 }
 function getLoadout() {
   var l = store.get('doodle_loadout', null);
@@ -453,13 +488,14 @@ function setLoadout(l) {
   store.set('doodle_loadout', l);
   /* Resolve full per-slot stats for the patched game to consume on match start */
   var stats = {};
-  ['rifle', 'shotgun', 'sniper', 'katana'].forEach(function (slot) {
+  ['rifle', 'shotgun', 'sniper', 'katana', 'explosive'].forEach(function (slot) {
     var found = weaponById(slot, l[slot]);
+    if (!found.def) return;
     var s = Object.assign({}, found.def.stats);
     s.name = found.def.name;
     s.hint = found.def.hint;
-    if (slot !== 'katana') { s.ink = found.def.ink; s.scale = found.def.scale; }
-    else { s.ink = found.def.ink; s.saber = !!found.def.saber; }
+    if (slot !== 'katana' && slot !== 'explosive') { s.ink = found.def.ink; s.scale = found.def.scale; }
+    else { s.ink = found.def.ink; }
     stats[slot] = s;
   });
   store.set('doodle_loadout_stats', stats);
@@ -486,6 +522,7 @@ var renderedFor = null;
 var TABS = [
   { id: 'play', label: 'PLAY' },
   { id: 'loadout', label: 'LOADOUT' },
+  { id: 'leaderboard', label: 'RANKS' },
   { id: 'profile', label: 'PROFILE' },
   { id: 'settings', label: 'SETTINGS' },
   { id: 'changelog', label: 'CHANGELOG' },
@@ -629,6 +666,7 @@ function refreshChrome() {
   renderedFor = view;
   if (setupOpen) renderSetup();
   else if (currentTab === 'loadout') renderLoadout();
+  else if (currentTab === 'leaderboard') renderLeaderboard();
   else if (currentTab === 'profile') renderProfile();
   else if (currentTab === 'settings') renderSettings();
   else if (currentTab === 'changelog') renderChangelog();
@@ -692,7 +730,16 @@ function renderSetup() {
       }).join('') +
     '</div>' +
     '<div class="dd-hint">harder runs earn more score &amp; XP · loadout &amp; map apply from the menu</div>' +
+    '<div class="dd-sec-label">CHARACTER</div>' +
+    '<div class="dd-cards">' +
+      CHARACTERS.map(function (c) {
+        var sel = getCharacter() === c.id;
+        return '<button type="button" class="dd-card' + (sel ? ' on' : '') + '" data-char="' + c.id + '">' +
+          '<span class="dd-ico">' + c.icon + '</span><b>' + c.name + '</b><i>' + c.bonuses + '</i></button>';
+      }).join('') +
+    '</div>' +
     '<div class="dd-row"><button type="button" class="dd-big" id="dd-launch">▶ &nbsp;START RUN</button>' +
+    '<button type="button" class="dd-alt" id="dd-tut-btn">TUTORIAL</button>' +
     '<button type="button" class="dd-alt" id="dd-back">BACK</button></div>';
 
   $$('[data-mode]', panelEl).forEach(function (b) {
@@ -704,8 +751,17 @@ function renderSetup() {
   $$('[data-wave]', panelEl).forEach(function (b) {
     b.addEventListener('click', function () { setupWave = Number(b.dataset.wave) || 1; renderSetup(); });
   });
+  $$('[data-char]', panelEl).forEach(function (b) {
+    b.addEventListener('click', function () { setCharacter(b.dataset.char); renderSetup(); });
+  });
   $('#dd-back', panelEl).addEventListener('click', closeSetup);
   $('#dd-launch', panelEl).addEventListener('click', launchSolo);
+  $('#dd-tut-btn', panelEl).addEventListener('click', function () {
+    closeSetup();
+    overlayEl.hidden = true;
+    if (tabsEl) tabsEl.hidden = true;
+    if (window.__ddTutorial) window.__ddTutorial.start();
+  });
 }
 function launchSolo() {
   var wave = setupWave || 1;
@@ -756,7 +812,7 @@ function renderLoadout() {
     '<h1>LOADOUT</h1>' +
     '<h2>pick your instruments of erasure</h2>' +
     '<div class="dd-slots">' +
-      ['rifle', 'shotgun', 'sniper', 'katana'].map(function (s) {
+      ['rifle', 'shotgun', 'sniper', 'katana', 'explosive'].map(function (s) {
         return '<button type="button" class="dd-slot' + (loadoutSlot === s ? ' on' : '') + '" data-slot="' + s + '">' + SLOT_LABEL[s] + '</button>';
       }).join('') +
     '</div>' +
@@ -1330,6 +1386,12 @@ function renderSettings() {
       '<label><input type="checkbox" id="dd-mc"' + (st.mobileControls ? ' checked' : '') + '> enable touch controls</label>' +
       '<label><input type="checkbox" id="dd-vj"' + (st.virtualJoystick ? ' checked' : '') + '> virtual joystick</label>' +
     '</div>' +
+    '<h2>cloud sync (Supabase)</h2>' +
+    '<div class="dd-set">' +
+      '<label>Supabase URL <input type="text" id="dd-sb-url" placeholder="https://xxx.supabase.co" value="' + escapeHtml(store.get('dd_supabase_url', '')) + '"></label>' +
+      '<label>Supabase anon key <input type="text" id="dd-sb-key" placeholder="eyJhbGci..." value="' + escapeHtml(store.get('dd_supabase_anon_key', '')) + '"></label>' +
+      '<div class="dd-hint">enter your Supabase project URL and anon key to enable cloud saves and global ranks · get them from your Supabase dashboard → Settings → API</div>' +
+    '</div>' +
     '<div class="dd-row"><button type="button" class="dd-big" id="dd-save">SAVE SETTINGS</button></div>' +
     '<div class="dd-hint">settings apply on next refresh · the main menu sliders apply instantly</div>';
 
@@ -1344,6 +1406,8 @@ function renderSettings() {
       antiAlias: $('#dd-aa', panelEl).checked,
       particles: $('#dd-pt', panelEl).checked,
       shadows: $('#dd-sh', panelEl).checked,
+      sbUrl: ($('#dd-sb-url', panelEl).value || '').trim(),
+      sbKey: ($('#dd-sb-key', panelEl).value || '').trim(),
       mobileControls: $('#dd-mc', panelEl).checked,
       virtualJoystick: $('#dd-vj', panelEl).checked
     };
@@ -1353,6 +1417,13 @@ function renderSettings() {
     store.set('doodle_invert', nst.invert ? '1' : '0');
     store.set('doodle_trackpad', nst.trackpad ? '1' : '0');
     store.set('doodle_music', nst.music ? '1' : '0');
+    /* Save Supabase config */
+    if (nst.sbUrl) store.set('dd_supabase_url', nst.sbUrl); else localStorage.removeItem('dd_supabase_url');
+    if (nst.sbKey) store.set('dd_supabase_anon_key', nst.sbKey); else localStorage.removeItem('dd_supabase_anon_key');
+    if (nst.sbUrl && nst.sbKey && window.__ddSync) {
+      toast('Connecting to Supabase…');
+      window.__ddSync.init().then(function (ok) { toast(ok ? 'Cloud sync enabled!' : 'Supabase connection failed — check URL and key', 3.5); });
+    }
     toast('Settings saved');
   });
 }
@@ -1384,6 +1455,73 @@ function renderCredits() {
       '<h3>Version</h3><p>Doodle District v' + VERSION + '</p>' +
       '<h3>Contact</h3><p><a href="https://github.com/nooranirizki14-rgb/shiny-octo-invention">View Repository</a></p>' +
     '</div>';
+}
+
+/* ---------------- leaderboard ---------------- */
+function renderLeaderboard() {
+  stopPreview();
+  var sync = window.__ddSync;
+  var configured = sync && sync.isConfigured();
+  var connected = sync && sync.isConnected();
+  panelEl.innerHTML =
+    '<h1>RANKS</h1>' +
+    '<h2>global doodler standings</h2>' +
+    (configured ? '' : '<div class="dd-hint" style="margin-bottom:12px">Connect Supabase in SETTINGS to enable cloud ranks. Showing local stats for now.</div>') +
+    '<div class="dd-lb-tabs">' +
+      '<button type="button" class="dd-lb-tab on" data-lb="solo">SOLO</button>' +
+      '<button type="button" class="dd-lb-tab" data-lb="mp">MULTIPLAYER</button>' +
+    '</div>' +
+    '<div id="dd-lb-body"><div class="dd-hint">loading…</div></div>' +
+    '<div class="dd-row"><button type="button" class="dd-alt" id="dd-lb-refresh">REFRESH</button>' +
+    '<span class="dd-hint">ranks update after each match</span></div>';
+
+  var lbMode = 'solo';
+  function loadLb(mode) {
+    lbMode = mode;
+    var body = $('#dd-lb-body', panelEl);
+    if (!body) return;
+    body.innerHTML = '<div class="dd-hint">loading…</div>';
+    if (!configured) {
+      /* Show local stats */
+      var p = getProfile();
+      var lv = levelForXP(p.xp);
+      if (mode === 'solo') {
+        body.innerHTML = '<table class="dd-lb-table"><tr><th>#</th><th>DOODLER</th><th>LVL</th><th>SCORE</th><th>WAVE</th><th>KILLS</th></tr>' +
+          '<tr class="me"><td>1</td><td>' + escapeHtml(playerName()) + '</td><td>' + lv.level + '</td><td>' + (p.bestScore || 0) + '</td><td>' + (p.bestWave || 0) + '</td><td>' + (p.kills || 0) + '</td></tr></table>';
+      } else {
+        var kd = p.onlineDeaths ? ((p.onlineKills || 0) / p.onlineDeaths).toFixed(2) : '—';
+        body.innerHTML = '<table class="dd-lb-table"><tr><th>#</th><th>DOODLER</th><th>LVL</th><th>KILLS</th><th>DEATHS</th><th>K/D</th><th>WINS</th></tr>' +
+          '<tr class="me"><td>1</td><td>' + escapeHtml(playerName()) + '</td><td>' + lv.level + '</td><td>' + (p.onlineKills || 0) + '</td><td>' + (p.onlineDeaths || 0) + '</td><td>' + kd + '</td><td>' + (p.wins || 0) + '</td></tr></table>';
+      }
+      return;
+    }
+    sync.getLeaderboard(mode).then(function (rows) {
+      if (!rows || !rows.length) { body.innerHTML = '<div class="dd-hint">no entries yet — play a match to appear!</div>'; return; }
+      var myId = sync.getDeviceId();
+      if (mode === 'solo') {
+        body.innerHTML = '<table class="dd-lb-table"><tr><th>#</th><th>DOODLER</th><th>LVL</th><th>SCORE</th><th>WAVE</th><th>KILLS</th></tr>' +
+          rows.map(function (r, i) {
+            return '<tr' + '><td>' + (i + 1) + '</td><td>' + escapeHtml(r.callsign || 'doodle') + '</td><td>' + (r.level || 1) + '</td><td>' + (r.best_score || 0) + '</td><td>' + (r.best_wave || 0) + '</td><td>' + (r.total_kills || 0) + '</td></tr>';
+          }).join('') + '</table>';
+      } else {
+        body.innerHTML = '<table class="dd-lb-table"><tr><th>#</th><th>DOODLER</th><th>LVL</th><th>KILLS</th><th>DEATHS</th><th>K/D</th><th>WINS</th></tr>' +
+          rows.map(function (r, i) {
+            var kd = r.online_deaths ? ((r.online_kills || 0) / r.online_deaths).toFixed(2) : '—';
+            return '<tr><td>' + (i + 1) + '</td><td>' + escapeHtml(r.callsign || 'doodle') + '</td><td>' + (r.level || 1) + '</td><td>' + (r.online_kills || 0) + '</td><td>' + (r.online_deaths || 0) + '</td><td>' + kd + '</td><td>' + (r.online_wins || 0) + '</td></tr>';
+          }).join('') + '</table>';
+      }
+    }).catch(function () { body.innerHTML = '<div class="dd-hint">failed to load — check your connection</div>'; });
+  }
+
+  $$('[data-lb]', panelEl).forEach(function (b) {
+    b.addEventListener('click', function () {
+      $$('.dd-lb-tab', panelEl).forEach(function (t) { t.classList.remove('on'); });
+      b.classList.add('on');
+      loadLb(b.dataset.lb);
+    });
+  });
+  $('#dd-lb-refresh', panelEl).addEventListener('click', function () { loadLb(lbMode); });
+  loadLb('solo');
 }
 
 /* ---------------- match-end detection (XP) ---------------- */
@@ -1531,7 +1669,28 @@ function init() {
   }
 }
 
+/* init Supabase sync on startup */
+if (window.__ddSync) {
+  window.__ddSync.init().then(function () {
+    if (window.__ddSync.isConnected()) {
+      window.__ddSync.syncFromCloud().then(function () { try { refreshProfileChip(); } catch (e) {} });
+    }
+  });
+}
+
 init();
+
+/* public API for external modules (tutorial, rocket launcher, supabase sync) */
+window.__ddMenu = {
+  toast: toast,
+  levelForXP: levelForXP,
+  getProfile: getProfile,
+  store: store,
+  VERSION: VERSION,
+  CHARACTERS: CHARACTERS,
+  getCharacter: getCharacter,
+  refreshProfileChip: refreshProfileChip
+};
 
 /* legacy export */
 window.GameMenuSystem = {
