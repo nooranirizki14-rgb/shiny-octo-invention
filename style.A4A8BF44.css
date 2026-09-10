@@ -25,7 +25,7 @@ canvas#c { position: fixed; inset: 0; width: 100vw; height: 100vh; display: bloc
 .ch-dot { width: 3px; height: 3px; left: -1.5px; top: -1.5px; border-radius: 50%; }
 .crosshair.katana i { background: var(--ink); } .crosshair.katana .ch-t, .crosshair.katana .ch-b { height: 16px; }
 .crosshair.katana .ch-l, .crosshair.katana .ch-r { display: none; }
-.grapple-ret { position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; margin: -15px; border: 2.5px dashed var(--ink); border-radius: 50%; opacity: 0; transition: opacity .1s, transform .12s; transform: scale(1.6) rotate(0deg); }
+.grapple-ret { position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; margin: -15px; border: 2.5px dashed var(--ink); border-radius: 50%; opacity: 0; transition: opacity .1s, transform .1s; }
 .grapple-ret.on { opacity: .9; transform: scale(1) rotate(20deg); } .grapple-ret.attached { border-style: solid; transform: scale(.65); }
 .hitmarker { position: absolute; left: 50%; top: 50%; opacity: 0; }
 .hitmarker i { position: absolute; width: 3.5px; height: 36px; background: #e8801a; left: -1.75px; top: -18px; border-radius: 2px; box-shadow: 0 0 0 1px rgba(250,248,238,.85); }
@@ -37,17 +37,17 @@ canvas#c { position: fixed; inset: 0; width: 100vw; height: 100vh; display: bloc
 .message { position: absolute; left: 0; right: 0; top: 24%; text-align: center; }
 .msg-main { font-size: 88px; color: var(--ink); transform: rotate(-2deg); opacity: 0; letter-spacing: 3px; line-height: 1; }
 .msg-main.show { animation: scribble .55s ease-out forwards; }
-@keyframes scribble { 0% { opacity: 0; transform: rotate(-7deg) scale(1.7); filter: blur(3px); } 55% { opacity: 1; transform: rotate(-1deg) scale(.95); filter: blur(0); } 100% { opacity: 1; transform: rotate(-2deg) scale(1); } }
+@keyframes scribble { 0% { opacity: 0; transform: rotate(-7deg) scale(1.7); filter: blur(3px); } 55% { opacity: 1; transform: rotate(-1deg) scale(.95); filter: blur(0); } 100% { opacity: 1; transform: rotate(0deg) scale(1); } }
 .msg-sub { font-size: 32px; opacity: .85; }
 .killfeed { position: absolute; right: 4%; top: 28%; text-align: right; font-size: 27px; }
 .killfeed div { animation: kf 1.7s ease-out forwards; } .killfeed .pts { color: var(--red); }
 @keyframes kf { 0% { opacity: 0; transform: translateX(30px) rotate(3deg); } 15% { opacity: 1; transform: none; } 75% { opacity: 1; } 100% { opacity: 0; } }
 .dmg-ind { position: absolute; left: 50%; top: 50%; }
-.dmg-ind i { position: absolute; left: -16px; top: -140px; width: 32px; height: 22px; transform-origin: 16px 140px; background: var(--red); clip-path: polygon(50% 0, 100% 100%, 0 100%); opacity: .9; animation: di 1s linear forwards; }
+.dmg-ind i { position: absolute; left: -16px; top: -140px; width: 32px; height: 22px; transform-origin: 16px 140px; background: var(--red); clip-path: polygon(50% 0, 100% 100%, 0 100%); opacity: .8; animation: di 1.2s ease-out forwards; }
 @keyframes di { to { opacity: 0; } }
 .screen { position: absolute; inset: 0; display: none; align-items: flex-start; justify-content: center; pointer-events: auto; cursor: pointer; background: rgba(246, 243, 230, .55); overflow-y: auto; }
 .screen.show { display: flex; }
-.panel { text-align: center; max-width: 980px; margin: auto; padding: 26px 48px; background: rgba(250, 248, 238, .93); box-shadow: 6px 6px 0 rgba(26, 48, 192, .15); border: 3px solid var(--ink); border-radius: 12px 18px 10px 16px / 16px 10px 18px 12px; transform: rotate(-.6deg); }
+.panel { text-align: center; max-width: 980px; margin: auto; padding: 26px 48px; background: rgba(250, 248, 238, .93); box-shadow: 6px 6px 0 rgba(26, 48, 192, .15); border: 3px solid var(--ink); border-radius: 12px 16px 10px 14px / 14px 10px 14px 12px; margin-top: 40px; margin-bottom: 40px; }
 .panel h1 { font-size: 92px; margin: 0; letter-spacing: 3px; line-height: 1; }
 .panel h2 { font-size: 36px; margin: 4px 0 14px; font-weight: normal; }
 .panel .cols { display: flex; gap: 46px; justify-content: center; text-align: left; font-size: 22px; line-height: 1.35; }
@@ -87,7 +87,7 @@ canvas#c { position: fixed; inset: 0; width: 100vw; height: 100vh; display: bloc
 .scope { position: absolute; inset: 0; opacity: 0; transition: opacity .1s; pointer-events: none; }
 .scope.on { opacity: 1; }
 .scope .mask { position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, rgba(246,243,230,0) 0 30vh, var(--paper) 30.6vh 100%); }
-.scope .ring { position: absolute; left: 50%; top: 50%; width: 60.5vh; height: 60.5vh; margin: -30.25vh; border: 3.5px solid var(--ink); border-radius: 50%; box-shadow: inset 0 0 0 7px rgba(26,48,192,.12); }
+.scope .ring { position: absolute; left: 50%; top: 50%; width: 60.5vh; height: 60.5vh; margin: -30.25vh; border: 3.5px solid var(--ink); border-radius: 50%; box-shadow: inset 0 0 0 7px rgba(26,48,192,.1); }
 .scope .cx { position: absolute; left: 50%; top: 50%; width: 60vh; height: 2.5px; margin: -1px -30vh; background: repeating-linear-gradient(90deg, var(--ink) 0 14px, transparent 14px 17px); }
 .scope .cy { position: absolute; left: 50%; top: 50%; width: 2.5px; height: 60vh; margin: -30vh -1px; background: repeating-linear-gradient(180deg, var(--ink) 0 14px, transparent 14px 17px); }
 .scope .dot { position: absolute; left: 50%; top: 50%; width: 5px; height: 5px; margin: -2.5px; background: var(--red); border-radius: 50%; }
@@ -120,7 +120,7 @@ canvas#c { position: fixed; inset: 0; width: 100vw; height: 100vh; display: bloc
 /* map picker */
 .mapsel { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 12px; padding-top: 10px; border-top: 2px solid var(--ink); flex-wrap: wrap; }
 .mapsel > span { font-size: 20px; opacity: .75; }
-.mapbtn { font: inherit; font-size: 20px; color: var(--ink); background: transparent; border: 2.5px solid var(--ink); border-radius: 7px 10px 6px 9px / 10px 6px 9px 7px; padding: 4px 12px; cursor: pointer; opacity: .55; display: flex; flex-direction: column; align-items: center; line-height: 1.1; transform: rotate(-.6deg); }
+.mapbtn { font: inherit; font-size: 20px; color: var(--ink); background: transparent; border: 2.5px solid var(--ink); border-radius: 7px 10px 6px 9px / 10px 6px 9px 7px; padding: 4px 12px; cursor: pointer; transform: rotate(-.5deg); transition: .2s; }
 .mapbtn i { font-style: normal; font-size: 14px; opacity: .75; }
 .mapbtn:hover { opacity: .85; }
 .mapbtn.on { opacity: 1; color: var(--paper); background: var(--ink); }
@@ -131,13 +131,13 @@ canvas#c { position: fixed; inset: 0; width: 100vw; height: 100vh; display: bloc
 .nades i::after { content: ''; position: absolute; left: 3px; top: -6px; width: 3px; height: 5px; background: var(--red); }
 /* lobby + modes */
 .modes { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 10px 0 4px; }
-.modebtn { font: inherit; font-size: 21px; color: var(--ink); background: transparent; border: 2.5px solid var(--ink); border-radius: 7px 10px 6px 9px / 10px 6px 9px 7px; padding: 6px 14px; cursor: pointer; opacity: .6; display: flex; flex-direction: column; align-items: center; line-height: 1.1; transform: rotate(-.5deg); min-width: 130px; }
+.modebtn { font: inherit; font-size: 21px; color: var(--ink); background: transparent; border: 2.5px solid var(--ink); border-radius: 7px 10px 6px 9px / 10px 6px 9px 7px; padding: 6px 14px; cursor: pointer; transition: .2s; }
 .modebtn i { font-style: normal; font-size: 14px; opacity: .8; }
 .modebtn:hover { opacity: .9; } .modebtn.on { opacity: 1; color: var(--paper); background: var(--ink); }
 .lobby { display: flex; flex-direction: column; gap: 10px; align-items: center; margin-top: 8px; }
 .lobby .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; }
-.lobby input[type=text] { font: inherit; font-size: 24px; width: 130px; text-align: center; letter-spacing: 4px; text-transform: uppercase; color: var(--ink); border: 2.5px solid var(--ink); border-radius: 6px 9px 6px 8px; background: transparent; padding: 3px 6px; }
-.lobby button, .bigbtn { font: inherit; font-size: 21px; color: var(--paper); background: var(--ink); border: 2.5px solid var(--ink); border-radius: 7px 10px 6px 9px / 10px 6px 9px 7px; padding: 5px 16px; cursor: pointer; transform: rotate(-.6deg); }
+.lobby input[type=text] { font: inherit; font-size: 24px; width: 130px; text-align: center; letter-spacing: 4px; text-transform: uppercase; color: var(--ink); border: 2.5px solid var(--ink); border-radius: 7px 10px 6px 9px / 10px 6px 9px 7px; background: transparent; padding: 2px 8px; }
+.lobby button, .bigbtn { font: inherit; font-size: 21px; color: var(--paper); background: var(--ink); border: 2.5px solid var(--ink); border-radius: 7px 10px 6px 9px / 10px 6px 9px 7px; padding: 6px 18px; cursor: pointer; transform: rotate(-.6deg); transition: .2s; }
 .lobby button.alt { color: var(--ink); background: transparent; }
 .lobby button:disabled { opacity: .4; cursor: default; }
 .code { font-size: 44px; letter-spacing: 8px; color: var(--red); border: 3px dashed var(--red); padding: 2px 18px; border-radius: 10px; }
@@ -150,7 +150,7 @@ canvas#c { position: fixed; inset: 0; width: 100vw; height: 100vh; display: bloc
 .scoreboard .me { background: rgba(26,48,192,.08); }
 .hud-tr .teamscore { font-size: 26px; } .hud-tr .teamscore b { color: var(--red); }
 .checkpoints { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 8px; font-size: 19px; }
-.checkpoints button { font: inherit; font-size: 19px; color: var(--ink); background: transparent; border: 2px solid var(--ink); border-radius: 6px 8px 5px 7px; padding: 3px 12px; cursor: pointer; }
+.checkpoints button { font: inherit; font-size: 19px; color: var(--ink); background: transparent; border: 2px solid var(--ink); border-radius: 6px 8px 5px 7px; padding: 3px 12px; cursor: pointer; transform: rotate(.5deg); transition: .15s; }
 .checkpoints button:hover { background: var(--ink); color: var(--paper); }
 .namebox { font: inherit; font-size: 20px; width: 150px; color: var(--ink); border: 2px solid var(--ink); border-radius: 6px 8px 5px 7px; background: transparent; padding: 2px 8px; }
 #hud.pad .kbonly, #hud:not(.pad) .padonly { display: none; }
@@ -158,7 +158,7 @@ canvas#c { position: fixed; inset: 0; width: 100vw; height: 100vh; display: bloc
 
 /* ---- main menu, online panel, scoreboard overlay ---- */
 .mainbtns { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; margin: 14px 0 6px; }
-.mainbtns button { font: inherit; font-size: 30px; color: var(--paper); background: var(--ink); border: 3px solid var(--ink); border-radius: 9px 13px 8px 12px / 12px 8px 11px 9px; padding: 10px 34px; cursor: pointer; transform: rotate(-.8deg); line-height: 1.05; }
+.mainbtns button { font: inherit; font-size: 30px; color: var(--paper); background: var(--ink); border: 3px solid var(--ink); border-radius: 9px 13px 8px 12px / 12px 8px 11px 9px; padding: 10px 30px; cursor: pointer; transform: rotate(-1.5deg); transition: .2s; }
 .mainbtns button i { display: block; font-style: normal; font-size: 16px; opacity: .8; letter-spacing: 1px; }
 .mainbtns button:nth-child(2) { transform: rotate(.7deg); background: var(--red); border-color: var(--red); }
 .mainbtns button:hover { filter: brightness(1.15); }
@@ -171,12 +171,12 @@ canvas#c { position: fixed; inset: 0; width: 100vw; height: 100vh; display: bloc
 .online .sub { font-size: 19px; opacity: .75; }
 .online .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: center; }
 .online .row.split { gap: 26px; }
-.online button { font: inherit; font-size: 22px; color: var(--paper); background: var(--ink); border: 2.5px solid var(--ink); border-radius: 7px 10px 6px 9px / 10px 6px 9px 7px; padding: 6px 18px; cursor: pointer; }
+.online button { font: inherit; font-size: 22px; color: var(--paper); background: var(--ink); border: 2.5px solid var(--ink); border-radius: 7px 10px 6px 9px / 10px 6px 9px 7px; padding: 6px 18px; cursor: pointer; transform: rotate(-.6deg); transition: .2s; }
 .online button.alt { color: var(--ink); background: transparent; }
 .online button.big { font-size: 26px; padding: 8px 26px; transform: rotate(-.6deg); }
 .online button:disabled { opacity: .4; cursor: default; }
 .online button:hover:not(:disabled) { filter: brightness(1.15); }
-.online input[type=text] { font: inherit; font-size: 26px; width: 150px; text-align: center; letter-spacing: 5px; text-transform: uppercase; color: var(--ink); border: 2.5px solid var(--ink); border-radius: 6px 9px 6px 8px; background: transparent; padding: 3px 6px; }
+.online input[type=text] { font: inherit; font-size: 26px; width: 150px; text-align: center; letter-spacing: 5px; text-transform: uppercase; color: var(--ink); border: 2.5px solid var(--ink); border-radius: 7px 10px 6px 9px / 10px 6px 9px 7px; background: transparent; padding: 2px 8px; }
 .online input.namebox { letter-spacing: 0; text-transform: none; font-size: 22px; width: 180px; }
 .online .radio { display: flex; gap: 14px; font-size: 19px; }
 .online .radio label { display: flex; gap: 5px; align-items: center; cursor: pointer; }
@@ -186,12 +186,58 @@ canvas#c { position: fixed; inset: 0; width: 100vw; height: 100vh; display: bloc
 .online .plist { min-width: 340px; }
 .online .plist .host span:first-child::after { content: ' · host'; opacity: .6; font-size: 16px; }
 .online .plist .me { background: rgba(26,48,192,.08); }
-.board { position: absolute; left: 50%; top: 18%; transform: translateX(-50%) rotate(-.5deg); background: rgba(250,247,238,.94); border: 3px solid var(--ink); border-radius: 12px 16px 10px 14px / 14px 10px 16px 12px; padding: 12px 22px; min-width: 380px; font-size: 24px; color: var(--ink); z-index: 5; }
+.board { position: absolute; left: 50%; top: 18%; transform: translateX(-50%) rotate(-.5deg); background: rgba(250,247,238,.94); border: 3px solid var(--ink); border-radius: 12px 16px 10px 14px / 14px 10px 14px 12px; padding: 24px; box-shadow: 6px 6px 0 rgba(0,0,0,.12); max-width: 90vw; max-height: 75vh; overflow-y: auto; z-index: 1000; }
 .board h3 { margin: 0 0 6px; font-size: 30px; text-align: center; letter-spacing: 2px; }
 .board div { display: flex; justify-content: space-between; gap: 24px; padding: 2px 8px; border-bottom: 1.5px solid rgba(26,48,192,.25); }
 .board div.me { background: rgba(26,48,192,.1); }
 .board .foot { font-size: 16px; opacity: .7; justify-content: center; border: 0; margin-top: 6px; }
 .feed { color: var(--red); }
+
+/* Credits, Settings, Changelog Sections */
+.credits-section { font-size: 20px; line-height: 1.6; text-align: left; max-width: 600px; margin: 0 auto; }
+.credits-section h3 { font-size: 28px; color: var(--ink); margin-top: 16px; margin-bottom: 8px; border-bottom: 2px solid var(--ink); padding-bottom: 4px; }
+.credits-section p { margin: 4px 0; }
+.credits-section .credit-role { color: var(--red); font-weight: bold; }
+
+.graphics-settings { display: flex; flex-direction: column; gap: 12px; align-items: center; font-size: 20px; margin-top: 12px; border-top: 2px solid var(--ink); padding-top: 10px; }
+.graphics-settings label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.graphics-settings select { font: inherit; font-size: 20px; color: var(--ink); background: transparent; border: 2px solid var(--ink); border-radius: 6px 8px 5px 7px; padding: 4px 8px; cursor: pointer; }
+.graphics-settings input[type=checkbox] { width: 17px; height: 17px; accent-color: #1a30c0; }
+
+.changelog-section { font-size: 18px; line-height: 1.5; text-align: left; max-width: 700px; margin: 0 auto; }
+.changelog-section h3 { font-size: 26px; color: var(--ink); margin-top: 12px; margin-bottom: 6px; }
+.changelog-section ul { margin: 4px 0; padding-left: 24px; }
+.changelog-section li { margin: 3px 0; }
+
+.menu-tabs { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+.menu-tab-btn { font: inherit; font-size: 20px; color: var(--ink); background: transparent; border: 2px solid var(--ink); border-radius: 6px 8px 5px 7px; padding: 6px 16px; cursor: pointer; transform: rotate(-.5deg); transition: .2s; }
+.menu-tab-btn:hover { opacity: .85; }
+.menu-tab-btn.active { color: var(--paper); background: var(--ink); opacity: 1; }
+.menu-tab-content { display: none; }
+.menu-tab-content.active { display: block; }
+
+/* Mobile Gameplay Support */
+@media (max-width: 768px) {
+  .panel h1 { font-size: 44px; }
+  .panel h2 { font-size: 28px; }
+  .panel { padding: 18px 24px; max-width: 90vw; }
+  .mainbtns button.start { min-width: 280px; font-size: 36px; padding: 12px 24px; }
+  .online button { font-size: 18px; padding: 6px 14px; }
+  .crosshair { --s: 8px; }
+  .hud-tl, .hud-tr { font-size: 24px; }
+  .hud-bl, .hud-br { font-size: 18px; }
+}
+
+@media (max-width: 480px) {
+  .panel h1 { font-size: 36px; }
+  .panel h2 { font-size: 22px; }
+  .panel .cols { font-size: 16px; }
+  .mainbtns button { font-size: 22px; padding: 8px 16px; }
+  .mainbtns button.start { min-width: 90vw; font-size: 28px; }
+  .settings { font-size: 18px; }
+  .settings input[type=range] { width: 160px; }
+  .board { padding: 16px; }
+}
 
 /* live mini leaderboard in the corner during online play */
 .pvpscore { font-size: 20px; line-height: 1.2; text-align: right; }
@@ -217,7 +263,7 @@ canvas#c { position: fixed; inset: 0; width: 100vw; height: 100vh; display: bloc
 /* the code box on the main menu */
 .codebox { position: fixed; right: 10px; bottom: 8px; display: flex; gap: 8px; align-items: center; font-size: 13px; opacity: .45; cursor: default; }
 .codebox:hover, .codebox:focus-within { opacity: .9; }
-.codebox input { font: inherit; font-size: 13px; width: 112px; text-align: center; color: var(--ink); border: 2px dashed rgba(26,48,192,.5); border-radius: 6px 8px 5px 7px; background: transparent; padding: 3px 8px; outline: none; }
+.codebox input { font: inherit; font-size: 13px; width: 112px; text-align: center; color: var(--ink); border: 2px dashed rgba(26,48,192,.5); border-radius: 6px 8px 5px 7px; background: transparent; padding: 1px 6px; }
 .codebox input:focus { border-style: solid; }
 .codebox input.nope { border-color: var(--red); }
 .codebox button { font: inherit; font-size: 12px; color: var(--ink); background: transparent; border: 2px solid var(--ink); border-radius: 6px 8px 5px 7px; padding: 1px 10px; cursor: pointer; }
