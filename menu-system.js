@@ -15,7 +15,7 @@
 /* Unlock the game's exposed API (game.js only exposes helpers when this exists) */
 window.__game = window.__game || {};
 
-var VERSION = '0.3.0';
+var VERSION = '2.2';
 var $ = function (s, r) { return (r || document).querySelector(s); };
 var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
 
@@ -164,15 +164,18 @@ function weaponById(slot, id) {
 
 /* ---------------- changelog data ---------------- */
 var CHANGELOG = [
-  { v: '0.3.0', date: '2026-09-10', title: 'Skyline, Golden Gear & Redeem Codes',
+  { v: '2.2', date: '2026-09-10', title: 'Skyline, Golden Gear & Redeem Codes',
     sections: {
       Added: [
         'NEW MAP: Doodle Skyline — rooftop parkour across doodle skyscrapers, water tanks, billboards and neon signs (solo + online)',
         'Redeem code system: enter codes on the PROFILE tab to unlock special weapons, banners, pfps and bonus XP',
         'Profile photo upload — pick any image as your pfp, shown on your banner and the top-bar chip',
         '4 legendary "Golden" weapons (one per rifle/shotgun/sniper/blade slot), unlockable only via redeem codes',
-        'Golden Doodle banner (redeem-only) and Ace Doodler banner (unlocks at Level 5)',
+        'Golden Doodle banner (redeem-only), Ace Doodler banner (Level 5) and Legend of the Page banner — a full illustrated artwork banner that unlocks at Level 12',
         '4 special pfp emblems (Ghost Doodle, Doodle Royalty, Grim Sketch, Hot Ink), unlockable via redeem codes'
+      ],
+      Improved: [
+        'Special pfp emblems now use plain hand-drawn-style glyphs instead of full-color emoji, so they stay on-brand with the doodle art style across every device/font'
       ],
       Fixed: [
         'Curved katanas (and a few other crooked-looking blades) now sweep as one continuous, connected curve instead of two disjoint slabs glued together at an angle',
@@ -241,12 +244,14 @@ var CHANGELOG = [
 /* ---------------- profile / XP ---------------- */
 var EMBLEMS = ['✎', '✦', '★', '⚡', '☠', '❖', '✚', '☀', '☾', '♞', '❂', '✜'];
 /* Special emblems are cosmetic pfp icons that stay locked until redeemed
-   via a code (see REDEEM_CODES) — same idea as the special banners/weapons. */
+   via a code (see REDEEM_CODES) — same idea as the special banners/weapons.
+   `icon` is a plain hand-lettered monogram (no emoji) so it always renders
+   as flat black/white text in the doodle art style, on every device/font. */
 var SPECIAL_EMBLEMS = [
-  { id: 'ghost', icon: '👻', name: 'Ghost Doodle' },
-  { id: 'crown', icon: '👑', name: 'Doodle Royalty' },
-  { id: 'skull2', icon: '💀', name: 'Grim Sketch' },
-  { id: 'fire', icon: '🔥', name: 'Hot Ink' }
+  { id: 'ghost', icon: 'GH', name: 'Ghost Doodle' },
+  { id: 'crown', icon: 'CR', name: 'Doodle Royalty' },
+  { id: 'skull2', icon: 'GR', name: 'Grim Sketch' },
+  { id: 'fire', icon: 'HI', name: 'Hot Ink' }
 ];
 var BANNERS = [
   { id: 'b0', name: 'Ruled Paper', css: 'linear-gradient(135deg,#f6f3e6 0%,#e8e4d2 100%)', fg: '#1a30c0' },
@@ -258,8 +263,18 @@ var BANNERS = [
   { id: 'b6', name: 'Bubblegum', css: 'linear-gradient(135deg,#e0609a,#f2a4c0)', fg: '#4a1030' },
   { id: 'b7', name: 'Gold Star', css: 'linear-gradient(135deg,#8a5a00,#e8b81a 60%,#f7e08a)', fg: '#3a2a00' },
   { id: 'b8', name: 'Ace Doodler', css: 'linear-gradient(135deg,#101018,#5a1f8f 45%,#1a30c0)', fg: '#f6f3e6', req: 5 },
-  { id: 'b9', name: 'Golden Doodle', css: 'linear-gradient(135deg,#5a3a00,#f2c94c 55%,#fff6c8)', fg: '#3a2400', special: true }
+  { id: 'b9', name: 'Golden Doodle', css: 'linear-gradient(135deg,#5a3a00,#f2c94c 55%,#fff6c8)', fg: '#3a2400', special: true },
+  /* Custom illustrated-artwork banner: `img` points at a real image file instead of
+     a CSS gradient. renderProfile()/bannerStyle() fall back to `css` as a color
+     wash under the image (in case it fails to load) and as the swatch background
+     on the small picker button. Unlocks automatically once you reach Level 12. */
+  { id: 'b10', name: 'Legend of the Page', img: 'assets/banner-legend.jpg', css: 'linear-gradient(135deg,#2a2118,#6b3f12 55%,#c98d2c)', fg: '#fff6ec', req: 12 }
 ];
+function bannerStyle(bn) {
+  return bn.img
+    ? 'background-image:linear-gradient(rgba(10,8,4,.15),rgba(10,8,4,.35)),url(' + bn.img + ');background-size:cover;background-position:center;'
+    : 'background:' + bn.css + ';';
+}
 
 function defaultProfile() {
   return { xp: 0, matches: 0, kills: 0, bestScore: 0, bestWave: 0, wins: 0, emblem: 0, banner: 'b0', avatar: null, specialEmblem: null, title: null };
@@ -1095,7 +1110,7 @@ function renderProfile() {
     : (p.specialEmblem ? SPECIAL_EMBLEMS.filter(function (e) { return e.id === p.specialEmblem; })[0].icon : EMBLEMS[p.emblem]);
   panelEl.innerHTML =
     '<h1>PROFILE</h1>' +
-    '<div class="dd-banner" style="background:' + b.css + ';color:' + b.fg + '">' +
+    '<div class="dd-banner" style="' + bannerStyle(b) + 'color:' + b.fg + '">' +
       '<span class="dd-pfp' + (p.avatar ? ' has-img' : '') + '" id="dd-pfp">' + avatarInner + '</span>' +
       '<span class="dd-pname">' + escapeHtml(playerName()) + '</span>' +
       '<span class="dd-level">LEVEL ' + lv.level + '</span>' +
@@ -1131,7 +1146,7 @@ function renderProfile() {
     '<div class="dd-banners">' + BANNERS.map(function (bn) {
       var unlocked = isBannerUnlocked(bn);
       var lockNote = bn.req ? ('Requires Level ' + bn.req) : (bn.special ? 'Redeem code required' : '');
-      return '<button type="button" class="dd-bn' + (p.banner === bn.id ? ' on' : '') + (unlocked ? '' : ' locked') + '" data-bn="' + bn.id + '"' + (unlocked ? '' : ' data-locked="1"') + ' style="background:' + bn.css + '" title="' + bn.name + (lockNote ? ' — ' + lockNote : '') + '">' +
+      return '<button type="button" class="dd-bn' + (bn.img ? ' dd-bn-img' : '') + (p.banner === bn.id ? ' on' : '') + (unlocked ? '' : ' locked') + '" data-bn="' + bn.id + '"' + (unlocked ? '' : ' data-locked="1"') + ' style="' + bannerStyle(bn) + '" title="' + bn.name + (lockNote ? ' — ' + lockNote : '') + '">' +
         '<span style="color:' + bn.fg + '">' + bn.name + (unlocked ? '' : ' 🔒') + '</span>' +
         (lockNote && !unlocked ? '<i class="dd-bn-req">' + lockNote + '</i>' : '') +
       '</button>';

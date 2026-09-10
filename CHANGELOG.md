@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.3.0] - 2026-09-10 — Skyline, Golden Gear & Redeem Codes
+## [2.2] - 2026-09-10 — Skyline, Golden Gear & Redeem Codes
 
 ### Added
 - **New map: Doodle Skyline** (solo + online) — a rooftop-hopping map built from
@@ -18,10 +18,16 @@
 - **4 legendary "Golden" weapons** — Golden Quill (rifle), Golden Blunderbuss
   (shotgun), Golden Longshot (sniper), Golden Edge (katana) — one per weapon
   category, all redeem-code-only and shown locked in the LOADOUT list until unlocked.
-- **2 new banners**: Ace Doodler (unlocks automatically at Level 5) and Golden
-  Doodle (redeem-code-only).
+- **3 new banners**: Ace Doodler (unlocks automatically at Level 5), Golden
+  Doodle (redeem-code-only), and **Legend of the Page** — a full illustrated
+  ink-and-paper artwork banner that unlocks automatically at Level 12.
 - **4 new special pfp emblems**: Ghost Doodle, Doodle Royalty, Grim Sketch and
   Hot Ink — all redeem-code-only, shown locked in the emblem picker until unlocked.
+
+### Improved
+- Special pfp emblems now use plain hand-drawn-style glyphs instead of
+  full-color emoji, so they stay on-brand with the doodle art style and render
+  consistently across every device and font.
 
 ### Fixed
 - **Crooked katanas fixed.** Curved blades (a handful of katana models) used to be

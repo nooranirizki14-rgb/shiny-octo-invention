@@ -209,6 +209,8 @@ body.dd-tabs-on #hud .screen { overflow-y: auto; }
 }
 .dd-bn.on { outline: 3px solid #d02030; outline-offset: 2px; opacity: 1; }
 .dd-bn.locked { opacity: .5; cursor: not-allowed; filter: grayscale(.5); position: relative; }
+.dd-bn-img { min-height: 64px; text-shadow: 0 1px 3px rgba(0,0,0,.7); }
+.dd-bn-img span { text-shadow: 0 1px 3px rgba(0,0,0,.7); }
 .dd-bn-req {
   display: block; font-style: normal; font-size: 13px; margin-top: 2px; opacity: .9;
 }
