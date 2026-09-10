@@ -64,6 +64,9 @@ const GameMenuSystem = {
       case 'changelog':
         panel.innerHTML = this.getChangelogHTML();
         break;
+      case 'play':
+        // Keep the play menu as-is, don't reload
+        break;
       default:
         // Restore original play menu
         location.reload();
