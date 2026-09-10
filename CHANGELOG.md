@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.3.2] - 2026-09-10 — Fix: secret weapons now actually look different in-game
+
+### Fixed
+- **Root cause of "the code doesn't work":** redeeming a code and equipping the new
+  weapon always worked — but blade-slot weapons (katana) never sent their
+  skin/ink/appearance data into the real in-game 3D model. Every blade, no matter
+  which one was equipped (including the old GOLDEN EDGE), rendered identically in
+  a match. Only the menu preview looked right.
+- LIGHTSABER now renders in-game as a solid glowing plasma blade (colored to its
+  ink), not the plain sketchy katana. Fixed for all blade skins going forward.
+- LIGHTSABER's held 3D model now goes further than a recolor: in a real match it
+  drops the crossguard, blood groove and grip wraps, and stretches into a longer,
+  thinner blade — so it reads as its own weapon, not a reskinned katana.
+
 ## [2.3] - 2026-09-10 — Secret Weapons & the Lightsaber
 
 ### Added

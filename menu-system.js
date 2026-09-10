@@ -15,7 +15,7 @@
 /* Unlock the game's exposed API (game.js only exposes helpers when this exists) */
 window.__game = window.__game || {};
 
-var VERSION = '2.3';
+var VERSION = '2.3.2';
 var $ = function (s, r) { return (r || document).querySelector(s); };
 var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
 
@@ -172,6 +172,14 @@ function weaponById(slot, id) {
 
 /* ---------------- changelog data ---------------- */
 var CHANGELOG = [
+  { v: '2.3.2', date: '2026-09-10', title: 'Fix: secret weapons now actually change how the blade looks',
+    sections: {
+      Fixed: [
+        'Blade-slot weapons (including LIGHTSABER, GOLDEN EDGE, and every katana skin) now correctly change appearance in real matches — previously the equipped skin/ink never reached the in-game 3D model, so every blade rendered identically no matter what you had equipped',
+        'LIGHTSABER now renders in-game as a real glowing plasma blade: no crossguard, no blood groove, no wraps, and a longer/thinner blade — not just a recolor of the sketchy katana'
+      ]
+    }
+  },
   { v: '2.3', date: '2026-09-10', title: 'Secret Weapons & the Lightsaber',
     sections: {
       Added: [
@@ -451,6 +459,7 @@ function setLoadout(l) {
     s.name = found.def.name;
     s.hint = found.def.hint;
     if (slot !== 'katana') { s.ink = found.def.ink; s.scale = found.def.scale; }
+    else { s.ink = found.def.ink; s.saber = !!found.def.saber; }
     stats[slot] = s;
   });
   store.set('doodle_loadout_stats', stats);
