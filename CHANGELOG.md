@@ -3,6 +3,10 @@
 ## [0.1.0] - 2026-09-10
 
 ### Added
+- **Difficulty Selection**: Easy, Medium, Hard modes for solo play
+  - Easy: fewer enemies, slower movement, less damage
+  - Medium: balanced gameplay (default)
+  - Hard: more enemies, faster movement, more damage
 - **Credits System**: Added Credits tab accessible from main menu
 - **Graphics Settings**: New graphics quality options (Low, Medium, High)
   - Shadow quality adjustments

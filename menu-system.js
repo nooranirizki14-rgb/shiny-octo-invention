@@ -122,6 +122,19 @@ const GameMenuSystem = {
         <label><input type="checkbox" id="setShadows" ${settings.shadows !== false ? 'checked' : ''}> Dynamic Shadows</label>
       </div>
 
+      <h2>DIFFICULTY</h2>
+      <div class="graphics-settings">
+        <label>
+          Mode:
+          <select id="setDifficulty">
+            <option value="easy" ${settings.difficulty === 'easy' ? 'selected' : ''}>Easy</option>
+            <option value="medium" ${settings.difficulty === 'medium' ? 'selected' : ''}>Medium</option>
+            <option value="hard" ${settings.difficulty === 'hard' ? 'selected' : ''}>Hard</option>
+          </select>
+        </label>
+        <p>Enemies move faster and deal more damage on higher difficulties</p>
+        </div>
+
       <h2>MOBILE</h2>
       <div class="graphics-settings">
         <label><input type="checkbox" id="setMobileControls" ${settings.mobileControls ? 'checked' : ''}> Enable Touch Controls</label>
@@ -397,6 +410,7 @@ const GameMenuSystem = {
     const trackInput = document.getElementById('setTrack');
     const musInput = document.getElementById('setMus');
     const qualitySelect = document.getElementById('graphicsQuality');
+    const diffInput = document.getElementById('setDifficulty');
     const antiAliasInput = document.getElementById('setAntiAlias');
     const particlesInput = document.getElementById('setParticles');
     const shadowsInput = document.getElementById('setShadows');
@@ -413,6 +427,7 @@ const GameMenuSystem = {
     if (shadowsInput) settings.shadows = shadowsInput.checked;
     if (mobileInput) settings.mobileControls = mobileInput.checked;
     if (joystickInput) settings.virtualJoystick = joystickInput.checked;
+    if (diffInput) settings.difficulty = diffInput.value;
 
     this.saveSettings(settings);
     alert('Settings saved! Changes will apply on next game start.');
@@ -433,7 +448,8 @@ const GameMenuSystem = {
       particles: true,
       shadows: true,
       mobileControls: true,
-      virtualJoystick: true
+      virtualJoystick: true,
+      difficulty: 'medium'
     };
 
     const saved = localStorage.getItem('doodle_settings_v0.1');
