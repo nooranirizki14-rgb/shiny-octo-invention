@@ -1,5 +1,36 @@
 # Changelog
 
+## [0.3.0] - 2026-09-10 — Skyline, Golden Gear & Redeem Codes
+
+### Added
+- **New map: Doodle Skyline** (solo + online) — a rooftop-hopping map built from
+  doodle skyscrapers of varying heights, connected by orange plank bridges and
+  paper-stair fire escapes. Comes with water towers, roof vents, neon billboards,
+  a central weathervane, orbiting paper planes/birds, and full FFA arena-spawn
+  support. Shows up automatically in the in-game map picker alongside District,
+  Jungle and Harbor.
+- **Redeem code system**: a new REDEEM CODE box on the PROFILE tab. Codes are
+  case-insensitive, single-use per browser, and can grant any mix of special
+  weapons, special banners, special pfp emblems and bonus XP.
+- **Profile photo upload**: pick any image from your device as your pfp. It's
+  downscaled/cropped client-side and stored locally, shown on your profile banner
+  and the top tab-bar chip. A "REMOVE PHOTO" button reverts to your emblem.
+- **4 legendary "Golden" weapons** — Golden Quill (rifle), Golden Blunderbuss
+  (shotgun), Golden Longshot (sniper), Golden Edge (katana) — one per weapon
+  category, all redeem-code-only and shown locked in the LOADOUT list until unlocked.
+- **2 new banners**: Ace Doodler (unlocks automatically at Level 5) and Golden
+  Doodle (redeem-code-only).
+- **4 new special pfp emblems**: Ghost Doodle, Doodle Royalty, Grim Sketch and
+  Hot Ink — all redeem-code-only, shown locked in the emblem picker until unlocked.
+
+### Fixed
+- **Crooked katanas fixed.** Curved blades (a handful of katana models) used to be
+  built from two disjointed box segments glued together at an angle, which could
+  render as visibly bent/broken swords. Blades are now built from a chain of
+  segments that each start exactly where the previous one ended, so curved
+  blades sweep smoothly and straight blades render exactly as before.
+- Credits now correctly attribute the game to **Zwoz**.
+
 ## [0.2.1] - 2026-09-10 — Menu Tabs Stay Put
 
 ### Fixed

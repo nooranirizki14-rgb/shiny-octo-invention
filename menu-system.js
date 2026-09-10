@@ -15,7 +15,7 @@
 /* Unlock the game's exposed API (game.js only exposes helpers when this exists) */
 window.__game = window.__game || {};
 
-var VERSION = '0.2.1';
+var VERSION = '0.3.0';
 var $ = function (s, r) { return (r || document).querySelector(s); };
 var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
 
@@ -77,7 +77,9 @@ rifle: [
  { id: 'rifle_comic', name: 'COMIC SANS', hint: 'the forbidden font · 60 rounds', desc: 'Nobody respects it. Everybody fears the 60-round mag.', ink: 5, scale: 1, bars: [42, 72, 90, 50],
    stats: { magSize: 60, reserve: 300, maxReserve: 420, interval: 0.0909, damage: 16, headMul: 2.2, pellets: 1, spread: 0.02, adsSpread: 0.005, reloadDur: 2, auto: true, falloff: null, pvp: [13, 1.6, null] } },
  { id: 'rifle_fountain', name: 'FOUNTAINHEAD', hint: 'masterwork · smooth & deadly', desc: 'A fountain pen fit for a doodle master. Superb all-round.', ink: 2, scale: 1.06, bars: [70, 80, 65, 78],
-   stats: { magSize: 40, reserve: 200, maxReserve: 400, interval: 0.0833, damage: 30, headMul: 3, pellets: 1, spread: 0.012, adsSpread: 0.0025, reloadDur: 1.4, auto: true, falloff: null, pvp: [24, 2, null] } }
+   stats: { magSize: 40, reserve: 200, maxReserve: 400, interval: 0.0833, damage: 30, headMul: 3, pellets: 1, spread: 0.012, adsSpread: 0.0025, reloadDur: 1.4, auto: true, falloff: null, pvp: [24, 2, null] } },
+ { id: 'rifle_golden', name: 'GOLDEN QUILL', hint: 'redeem-only · legendary scribe', desc: 'A legendary quill dipped in gold ink. Unlocked only by redeem code.', ink: 5, scale: 1.04, bars: [80, 82, 70, 82], special: true,
+   stats: { magSize: 40, reserve: 240, maxReserve: 480, interval: 0.08, damage: 32, headMul: 3.2, pellets: 1, spread: 0.01, adsSpread: 0.002, reloadDur: 1.3, auto: true, falloff: null, pvp: [26, 2.2, null] } }
 ],
 shotgun: [
  { id: 'shotgun_classic', name: 'CLASSIC SHOTGUN', hint: 'pump · devastating up close', desc: 'The classic pump-action page clearer. Ten pellets of nope.', ink: 0, scale: 1, bars: [80, 30, 40, 25],
@@ -99,7 +101,9 @@ shotgun: [
  { id: 'shotgun_mid', name: 'MARGIN BLAST', hint: 'balanced boom · reliable', desc: 'A well-kept all-rounder. Tight enough for hallways, wide enough for crowds.', ink: 3, scale: 1, bars: [72, 34, 40, 32],
    stats: { magSize: 6, reserve: 42, maxReserve: 84, interval: 0.7, damage: 18, headMul: 1.8, pellets: 10, spread: 0.05, adsSpread: 0.028, reloadDur: 0.42, auto: false, falloff: [11, 32, 0.22], cycleDur: 0.4, pvp: [15, 1.6, [9, 26, 0.15]] } },
  { id: 'shotgun_fullstop', name: 'FULL STOP.', hint: 'ends sentences · and enemies', desc: 'The final word in close-range arguments. Fourteen pellets. Period.', ink: 1, scale: 1.12, bars: [100, 15, 25, 30],
-   stats: { magSize: 4, reserve: 32, maxReserve: 64, interval: 1.1, damage: 26, headMul: 2, pellets: 14, spread: 0.045, adsSpread: 0.025, reloadDur: 0.55, auto: false, falloff: [12, 34, 0.25], cycleDur: 0.65, pvp: [22, 1.8, [10, 28, 0.15]] } }
+   stats: { magSize: 4, reserve: 32, maxReserve: 64, interval: 1.1, damage: 26, headMul: 2, pellets: 14, spread: 0.045, adsSpread: 0.025, reloadDur: 0.55, auto: false, falloff: [12, 34, 0.25], cycleDur: 0.65, pvp: [22, 1.8, [10, 28, 0.15]] } },
+ { id: 'shotgun_golden', name: 'GOLDEN BLUNDERBUSS', hint: 'redeem-only · legendary boom', desc: 'A ceremonial gold-plated boomstick. Unlocked only by redeem code.', ink: 5, scale: 1.08, bars: [92, 26, 35, 32], special: true,
+   stats: { magSize: 6, reserve: 42, maxReserve: 84, interval: 0.75, damage: 22, headMul: 2, pellets: 12, spread: 0.055, adsSpread: 0.03, reloadDur: 0.45, auto: false, falloff: [12, 34, 0.24], cycleDur: 0.5, pvp: [19, 1.8, [10, 28, 0.15]] } }
 ],
 sniper: [
  { id: 'sniper_classic', name: 'CLASSIC SNIPER', hint: 'scoped bolt action · one shot, one erasure', desc: 'The classic scoped bolt-action. Patience rewarded with erasure.', ink: 0, scale: 1, bars: [95, 20, 30, 100],
@@ -121,7 +125,9 @@ sniper: [
  { id: 'sniper_calli', name: 'CALLIGRAPH', hint: 'elegant annihilation', desc: 'Every shot a flowing stroke ofexpensive ink. Beautiful and lethal.', ink: 2, scale: 1.04, bars: [88, 26, 30, 95],
    stats: { magSize: 5, reserve: 30, maxReserve: 60, interval: 0.18, damage: 160, headMul: 3, pellets: 1, spread: 0.065, adsSpread: 0.0003, reloadDur: 1.9, auto: false, falloff: null, cycleDur: 0.75, adsFov: 22, pvp: [160, 1.5, null] } },
  { id: 'sniper_headline', name: 'HEADLINE', hint: 'boss deleter · 260 dmg', desc: 'Front-page news: LOCAL BOSS ERASED. Slow, loud, final.', ink: 1, scale: 1.12, bars: [100, 10, 18, 100],
-   stats: { magSize: 3, reserve: 18, maxReserve: 36, interval: 0.35, damage: 260, headMul: 3, pellets: 1, spread: 0.1, adsSpread: 0.0004, reloadDur: 2.8, auto: false, falloff: null, cycleDur: 1.4, adsFov: 14, pvp: [220, 1.5, null] } }
+   stats: { magSize: 3, reserve: 18, maxReserve: 36, interval: 0.35, damage: 260, headMul: 3, pellets: 1, spread: 0.1, adsSpread: 0.0004, reloadDur: 2.8, auto: false, falloff: null, cycleDur: 1.4, adsFov: 14, pvp: [220, 1.5, null] } },
+ { id: 'sniper_golden', name: 'GOLDEN LONGSHOT', hint: 'redeem-only · legendary scope', desc: 'A gilded masterpiece of a rifle. Unlocked only by redeem code.', ink: 5, scale: 1.05, bars: [96, 22, 30, 98], special: true,
+   stats: { magSize: 5, reserve: 25, maxReserve: 50, interval: 0.19, damage: 165, headMul: 3.2, pellets: 1, spread: 0.06, adsSpread: 0.0003, reloadDur: 2, auto: false, falloff: null, cycleDur: 0.8, adsFov: 20, pvp: [165, 1.6, null] } }
 ],
 katana: [
  { id: 'katana_classic', name: 'CLASSIC KATANA', hint: 'slash · hold aim to block & return bullets', desc: 'The classic page slicer. Block bullets, return them with interest.', ink: 0, scale: 1, bars: [70, 65, 100, 15],
@@ -143,7 +149,9 @@ katana: [
  { id: 'katana_broad', name: 'DOODLE BROADSWORD', hint: 'legendary · 120 dmg', desc: 'Forged from a hundred broken pencils. The heaviest eraser.', ink: 1, scale: 1.18, bars: [100, 32, 100, 24],
    stats: { damage: 120, slashDur: 0.34 } },
  { id: 'katana_eraserblade', name: 'ERASERBLADE', hint: 'balanced soul of ink', desc: 'Half blade, half eraser. A duelist\'s perfect companion.', ink: 4, scale: 1, bars: [80, 68, 100, 16],
-   stats: { damage: 90, slashDur: 0.26 } }
+   stats: { damage: 90, slashDur: 0.26 } },
+ { id: 'katana_golden', name: 'GOLDEN EDGE', hint: 'redeem-only · legendary blade', desc: 'A blade forged from pure gold ink. Unlocked only by redeem code.', ink: 5, scale: 1.05, bars: [88, 72, 100, 18], special: true,
+   stats: { damage: 100, slashDur: 0.25 } }
 ]};
 
 var SLOT_LABEL = { rifle: 'RIFLE', shotgun: 'SHOTGUN', sniper: 'SNIPER', katana: 'BLADE' };
@@ -156,6 +164,21 @@ function weaponById(slot, id) {
 
 /* ---------------- changelog data ---------------- */
 var CHANGELOG = [
+  { v: '0.3.0', date: '2026-09-10', title: 'Skyline, Golden Gear & Redeem Codes',
+    sections: {
+      Added: [
+        'NEW MAP: Doodle Skyline — rooftop parkour across doodle skyscrapers, water tanks, billboards and neon signs (solo + online)',
+        'Redeem code system: enter codes on the PROFILE tab to unlock special weapons, banners, pfps and bonus XP',
+        'Profile photo upload — pick any image as your pfp, shown on your banner and the top-bar chip',
+        '4 legendary "Golden" weapons (one per rifle/shotgun/sniper/blade slot), unlockable only via redeem codes',
+        'Golden Doodle banner (redeem-only) and Ace Doodler banner (unlocks at Level 5)',
+        '4 special pfp emblems (Ghost Doodle, Doodle Royalty, Grim Sketch, Hot Ink), unlockable via redeem codes'
+      ],
+      Fixed: [
+        'Curved katanas (and a few other crooked-looking blades) now sweep as one continuous, connected curve instead of two disjoint slabs glued together at an angle',
+        'Credits now correctly attribute the game to Zwoz'
+      ]
+    } },
   { v: '0.2.1', date: '2026-09-10', title: 'Menu Tabs Stay Put',
     sections: {
       Fixed: [
@@ -217,6 +240,14 @@ var CHANGELOG = [
 
 /* ---------------- profile / XP ---------------- */
 var EMBLEMS = ['✎', '✦', '★', '⚡', '☠', '❖', '✚', '☀', '☾', '♞', '❂', '✜'];
+/* Special emblems are cosmetic pfp icons that stay locked until redeemed
+   via a code (see REDEEM_CODES) — same idea as the special banners/weapons. */
+var SPECIAL_EMBLEMS = [
+  { id: 'ghost', icon: '👻', name: 'Ghost Doodle' },
+  { id: 'crown', icon: '👑', name: 'Doodle Royalty' },
+  { id: 'skull2', icon: '💀', name: 'Grim Sketch' },
+  { id: 'fire', icon: '🔥', name: 'Hot Ink' }
+];
 var BANNERS = [
   { id: 'b0', name: 'Ruled Paper', css: 'linear-gradient(135deg,#f6f3e6 0%,#e8e4d2 100%)', fg: '#1a30c0' },
   { id: 'b1', name: 'Blue Ink', css: 'linear-gradient(135deg,#1a30c0,#3f5ef0)', fg: '#f6f3e6' },
@@ -225,11 +256,13 @@ var BANNERS = [
   { id: 'b4', name: 'Jungle', css: 'linear-gradient(135deg,#0d5c34,#1d9e6c)', fg: '#f2f7e6' },
   { id: 'b5', name: 'Midnight', css: 'linear-gradient(135deg,#14141f,#333a55)', fg: '#f6f3e6' },
   { id: 'b6', name: 'Bubblegum', css: 'linear-gradient(135deg,#e0609a,#f2a4c0)', fg: '#4a1030' },
-  { id: 'b7', name: 'Gold Star', css: 'linear-gradient(135deg,#8a5a00,#e8b81a 60%,#f7e08a)', fg: '#3a2a00' }
+  { id: 'b7', name: 'Gold Star', css: 'linear-gradient(135deg,#8a5a00,#e8b81a 60%,#f7e08a)', fg: '#3a2a00' },
+  { id: 'b8', name: 'Ace Doodler', css: 'linear-gradient(135deg,#101018,#5a1f8f 45%,#1a30c0)', fg: '#f6f3e6', req: 5 },
+  { id: 'b9', name: 'Golden Doodle', css: 'linear-gradient(135deg,#5a3a00,#f2c94c 55%,#fff6c8)', fg: '#3a2400', special: true }
 ];
 
 function defaultProfile() {
-  return { xp: 0, matches: 0, kills: 0, bestScore: 0, bestWave: 0, wins: 0, emblem: 0, banner: 'b0' };
+  return { xp: 0, matches: 0, kills: 0, bestScore: 0, bestWave: 0, wins: 0, emblem: 0, banner: 'b0', avatar: null, specialEmblem: null, title: null };
 }
 function getProfile() {
   var p = store.get('doodle_profile_v1', null);
@@ -290,6 +323,77 @@ function awardMatch(kind, info, key) {
   }
   refreshProfileChip();
   setTimeout(function () { try { refreshChrome(); } catch (e) {} }, 0);
+}
+
+/* ---------------- redeem codes ---------------- */
+/* Unlocks are stored separately from the profile so resetting profile progress
+   never takes away something a code already granted. */
+function defaultUnlocks() {
+  return { weapons: [], banners: [], emblems: [], codes: [] };
+}
+function getUnlocks() {
+  var u = store.get('doodle_unlocks_v1', null);
+  return Object.assign(defaultUnlocks(), u || {});
+}
+function saveUnlocks(u) { store.set('doodle_unlocks_v1', u); }
+function isWeaponUnlocked(def) {
+  if (!def.special) return true;
+  return getUnlocks().weapons.indexOf(def.id) !== -1;
+}
+function isBannerUnlocked(bn) {
+  if (bn.special) return getUnlocks().banners.indexOf(bn.id) !== -1;
+  if (bn.req) return levelForXP(getProfile().xp).level >= bn.req;
+  return true;
+}
+function isEmblemUnlocked(id) {
+  return getUnlocks().emblems.indexOf(id) !== -1;
+}
+
+/* Codes are case-insensitive and single-use per browser (localStorage). Each
+   entry can grant any mix of weapons / banners / emblems / xp / other. */
+var REDEEM_CODES = {
+  'ZWOZGOLD': { xp: 500, weapons: ['rifle_golden', 'shotgun_golden', 'sniper_golden', 'katana_golden'], banners: ['b9'], desc: 'the full golden arsenal + Golden Doodle banner + 500 XP' },
+  'DOODLEVIP': { banners: ['b9'], emblems: ['crown'], desc: 'Golden Doodle banner + Doodle Royalty emblem' },
+  'GHOSTMODE': { emblems: ['ghost', 'skull2'], xp: 150, desc: 'Ghost Doodle + Grim Sketch emblems + 150 XP' },
+  'FIRESTARTER': { emblems: ['fire'], weapons: ['katana_golden'], xp: 250, desc: 'Hot Ink emblem + Golden Edge katana + 250 XP' },
+  'WELCOME2026': { xp: 300, desc: '300 XP, on the house' }
+};
+
+function redeemCode(raw) {
+  var code = String(raw || '').trim().toUpperCase();
+  if (!code) return { ok: false, msg: 'Type a code first' };
+  var grant = REDEEM_CODES[code];
+  if (!grant) return { ok: false, msg: 'That code doesn\'t exist' };
+  var u = getUnlocks();
+  if (u.codes.indexOf(code) !== -1) return { ok: false, msg: 'Already redeemed that one' };
+  u.codes.push(code);
+  var got = [];
+  (grant.weapons || []).forEach(function (id) {
+    if (u.weapons.indexOf(id) === -1) { u.weapons.push(id); }
+  });
+  (grant.banners || []).forEach(function (id) {
+    if (u.banners.indexOf(id) === -1) { u.banners.push(id); }
+  });
+  (grant.emblems || []).forEach(function (id) {
+    if (u.emblems.indexOf(id) === -1) { u.emblems.push(id); }
+  });
+  saveUnlocks(u);
+  if (grant.xp) {
+    var p = getProfile();
+    var before = levelForXP(p.xp).level;
+    p.xp += grant.xp;
+    saveProfile(p);
+    got.push('+' + grant.xp + ' XP');
+    var after = levelForXP(p.xp);
+    if (after.level > before) {
+      setTimeout(function () { toast('★ LEVEL UP! You are now LEVEL ' + after.level + ' ★', 4); }, 1400);
+    }
+  }
+  if (grant.weapons && grant.weapons.length) got.push(grant.weapons.length + ' weapon' + (grant.weapons.length > 1 ? 's' : ''));
+  if (grant.banners && grant.banners.length) got.push(grant.banners.length + ' banner' + (grant.banners.length > 1 ? 's' : ''));
+  if (grant.emblems && grant.emblems.length) got.push(grant.emblems.length + ' emblem' + (grant.emblems.length > 1 ? 's' : ''));
+  refreshProfileChip();
+  return { ok: true, msg: 'Redeemed! ' + (grant.desc || got.join(' · ')) };
 }
 
 /* ---------------- loadout store ---------------- */
@@ -401,7 +505,12 @@ function refreshProfileChip() {
   if (!chip) return;
   var p = getProfile();
   var lv = levelForXP(p.xp);
-  chip.textContent = EMBLEMS[p.emblem] + ' Lv ' + lv.level;
+  if (p.avatar) {
+    chip.innerHTML = '<img src="' + p.avatar + '" alt="" class="dd-chip-img">' + ' Lv ' + lv.level;
+  } else {
+    var icon = p.specialEmblem ? (SPECIAL_EMBLEMS.filter(function (e) { return e.id === p.specialEmblem; })[0] || {}).icon || EMBLEMS[p.emblem] : EMBLEMS[p.emblem];
+    chip.textContent = icon + ' Lv ' + lv.level;
+  }
 }
 
 function gameScreen() { return $('#screen'); }
@@ -610,11 +719,12 @@ function renderLoadout() {
       '<div class="dd-lo-list">' +
         list.map(function (w, i) {
           var on = sel.def.id === w.id;
-          return '<button type="button" class="dd-gun' + (on ? ' on' : '') + '" data-gun="' + w.id + '">' +
+          var locked = w.special && !isWeaponUnlocked(w);
+          return '<button type="button" class="dd-gun' + (on ? ' on' : '') + (locked ? ' locked' : '') + '" data-gun="' + w.id + '"' + (locked ? ' data-locked="1"' : '') + '>' +
             '<span class="dd-thumb" data-thumb="' + w.id + '"><span class="dd-thumb-fallback">' + w.name.charAt(0) + '</span></span>' +
-            '<span class="dd-gun-meta"><b>' + w.name + '</b>' +
+            '<span class="dd-gun-meta"><b>' + w.name + (w.special ? ' <i class="dd-tag">SPECIAL</i>' : '') + '</b>' +
             '<span class="dd-minibars">' + miniBars(w) + '</span></span>' +
-            (on ? '<span class="dd-equipped">EQUIPPED</span>' : '') +
+            (locked ? '<span class="dd-locked">🔒 REDEEM CODE</span>' : on ? '<span class="dd-equipped">EQUIPPED</span>' : '') +
           '</button>';
         }).join('') +
       '</div>' +
@@ -638,6 +748,7 @@ function renderLoadout() {
   });
   $$('[data-gun]', panelEl).forEach(function (b) {
     b.addEventListener('click', function () {
+      if (b.dataset.locked) { toast('Locked — redeem a code to unlock this weapon (see PROFILE tab)', 3); return; }
       var l = getLoadout();
       l[loadoutSlot] = b.dataset.gun;
       setLoadout(l);
@@ -792,19 +903,37 @@ function buildSniper(T, def, i, M) {
   outline(T, g, M.line);
   return g;
 }
+/* Builds a blade out of chained segments so curved swords stay perfectly
+   connected (each segment starts exactly where the last one ended) instead
+   of two disjoint boxes glued on top of each other at odd angles — that
+   mismatch was what made some "katanas" look bent/broken. curveTotal is the
+   total accumulated tilt (radians) across every segment; 0 = perfectly
+   straight blade. */
+function bladeChain(T, g, mat, totalLen, width, thick, startY, startZ, curveTotal, segs, taper) {
+  var y = startY, z = startZ, angle = 0;
+  var angleStep = curveTotal / segs;
+  var segLen = totalLen / segs;
+  for (var s = 0; s < segs; s++) {
+    var dz = -Math.cos(angle), dy = Math.sin(angle);
+    var cy2 = y + dy * segLen / 2, cz2 = z + dz * segLen / 2;
+    var w = width * (taper ? (1 - 0.35 * (s / segs)) : 1);
+    var m = bx(T, g, mat, w, thick, segLen + 0.002, 0, cy2, cz2, angle, 0, 0);
+    y += dy * segLen; z += dz * segLen;
+    angle += angleStep;
+  }
+  return { endY: y, endZ: z };
+}
 function buildBlade(T, def, i, M) {
   var g = new T.Group(), acc = accentMat(T, def);
   var blen = 0.95 + (i % 5) * 0.09 + (i === 2 || i === 8 ? 0.15 : 0);
   var bw = 0.05 + (i % 3) * 0.012 + (i === 8 ? 0.03 : 0);
   var curve = (i === 0 || i === 2 || i === 8);
-  if (curve) {
-    bx(T, g, M.blade, bw, 0.028, blen * 0.62, 0, 0.012, -0.1 - blen * 0.31);
-    var tip = bx(T, g, M.blade, bw * 0.92, 0.026, blen * 0.42, 0, 0.045, -0.1 - blen * 0.62 - blen * 0.18, -0.1);
-    void tip;
-  } else {
-    bx(T, g, M.blade, bw, 0.028, blen, 0, 0.01, -0.1 - blen / 2);
-  }
-  bx(T, g, M.glow, bw * 0.2, 0.03, blen * 0.7, 0, 0.01, -0.15 - blen * 0.35);
+  var curveTotal = curve ? -0.42 : 0; /* gentle continuous sweep toward the tip, like a real katana */
+  bladeChain(T, g, M.blade, blen, bw, 0.028, 0.01, -0.1, curveTotal, curve ? 7 : 1, true);
+  bladeChain(T, g, M.glow, blen * 0.7, bw * 0.2, 0.03, 0.01, -0.15, curveTotal * 0.7, curve ? 5 : 1, false);
+  /* blood-groove line running the spine of the blade, always straight relative
+     to its own segment so it never looks like it "snaps" off the blade */
+  bladeChain(T, g, M.dark, blen * 0.92, bw * 0.14, 0.006, 0.024, -0.12, curveTotal * 0.92, curve ? 7 : 1, true);
   if (i % 3 === 0) { cy(T, g, M.dark, 0.09, 0.09, 0.035, 0, 0, -0.06, Math.PI / 2); cy(T, g, acc, 0.045, 0.045, 0.04, 0, 0, -0.06, Math.PI / 2); }
   else if (i % 3 === 1) { bx(T, g, M.dark, 0.2, 0.035, 0.05, 0, 0, -0.06); }
   else { bx(T, g, acc, 0.16, 0.03, 0.04, 0, 0, -0.06); bx(T, g, M.dark, 0.05, 0.05, 0.05, 0, 0, -0.06); }
@@ -960,10 +1089,14 @@ function renderProfile() {
   var lv = levelForXP(p.xp);
   var b = bannerById(p.banner);
   var pct = Math.round(100 * lv.cur / lv.need);
+  var unlocks = getUnlocks();
+  var avatarInner = p.avatar
+    ? '<img src="' + p.avatar + '" alt="avatar">'
+    : (p.specialEmblem ? SPECIAL_EMBLEMS.filter(function (e) { return e.id === p.specialEmblem; })[0].icon : EMBLEMS[p.emblem]);
   panelEl.innerHTML =
     '<h1>PROFILE</h1>' +
     '<div class="dd-banner" style="background:' + b.css + ';color:' + b.fg + '">' +
-      '<span class="dd-emblem">' + EMBLEMS[p.emblem] + '</span>' +
+      '<span class="dd-pfp' + (p.avatar ? ' has-img' : '') + '" id="dd-pfp">' + avatarInner + '</span>' +
       '<span class="dd-pname">' + escapeHtml(playerName()) + '</span>' +
       '<span class="dd-level">LEVEL ' + lv.level + '</span>' +
     '</div>' +
@@ -978,14 +1111,35 @@ function renderProfile() {
     '<div class="dd-sec-label">CALLSIGN</div>' +
     '<div class="dd-row"><input type="text" id="dd-name" maxlength="14" value="' + escapeHtml(playerName()) + '" autocomplete="off" spellcheck="false">' +
     '<span class="dd-hint">applies on next refresh</span></div>' +
+    '<div class="dd-sec-label">PROFILE PHOTO</div>' +
+    '<div class="dd-row">' +
+      '<button type="button" class="dd-alt" id="dd-pfp-upload">UPLOAD PHOTO</button>' +
+      (p.avatar ? '<button type="button" class="dd-alt" id="dd-pfp-clear">REMOVE PHOTO</button>' : '') +
+      '<input type="file" id="dd-pfp-file" accept="image/*" hidden>' +
+      '<span class="dd-hint">square images look best · stored on this device only</span>' +
+    '</div>' +
     '<div class="dd-sec-label">EMBLEM</div>' +
     '<div class="dd-emblems">' + EMBLEMS.map(function (e, i) {
-      return '<button type="button" class="dd-emb' + (p.emblem === i ? ' on' : '') + '" data-emb="' + i + '">' + e + '</button>';
+      return '<button type="button" class="dd-emb' + (!p.avatar && !p.specialEmblem && p.emblem === i ? ' on' : '') + '" data-emb="' + i + '">' + e + '</button>';
+    }).join('') +
+    SPECIAL_EMBLEMS.map(function (e) {
+      var unlocked = isEmblemUnlocked(e.id);
+      var on = !p.avatar && p.specialEmblem === e.id;
+      return '<button type="button" class="dd-emb dd-emb-special' + (on ? ' on' : '') + (unlocked ? '' : ' locked') + '" data-semb="' + e.id + '" title="' + e.name + (unlocked ? '' : ' — redeem code required') + '">' + (unlocked ? e.icon : '🔒') + '</button>';
     }).join('') + '</div>' +
     '<div class="dd-sec-label">BANNER</div>' +
     '<div class="dd-banners">' + BANNERS.map(function (bn) {
-      return '<button type="button" class="dd-bn' + (p.banner === bn.id ? ' on' : '') + '" data-bn="' + bn.id + '" style="background:' + bn.css + '" title="' + bn.name + '"><span style="color:' + bn.fg + '">' + bn.name + '</span></button>';
+      var unlocked = isBannerUnlocked(bn);
+      var lockNote = bn.req ? ('Requires Level ' + bn.req) : (bn.special ? 'Redeem code required' : '');
+      return '<button type="button" class="dd-bn' + (p.banner === bn.id ? ' on' : '') + (unlocked ? '' : ' locked') + '" data-bn="' + bn.id + '"' + (unlocked ? '' : ' data-locked="1"') + ' style="background:' + bn.css + '" title="' + bn.name + (lockNote ? ' — ' + lockNote : '') + '">' +
+        '<span style="color:' + bn.fg + '">' + bn.name + (unlocked ? '' : ' 🔒') + '</span>' +
+        (lockNote && !unlocked ? '<i class="dd-bn-req">' + lockNote + '</i>' : '') +
+      '</button>';
     }).join('') + '</div>' +
+    '<div class="dd-sec-label">REDEEM CODE</div>' +
+    '<div class="dd-row"><input type="text" id="dd-redeem" maxlength="24" placeholder="enter code here" autocomplete="off" spellcheck="false">' +
+    '<button type="button" class="dd-alt" id="dd-redeem-btn">REDEEM</button></div>' +
+    '<div class="dd-hint">codes can unlock special weapons, banners, pfps, XP and more · one-time use</div>' +
     '<div class="dd-row"><button type="button" class="dd-alt" id="dd-p-reset">RESET PROGRESS</button>' +
     '<span class="dd-hint">earn XP from every match · harder runs earn more</span></div>';
 
@@ -995,15 +1149,70 @@ function renderProfile() {
   });
   $$('[data-emb]', panelEl).forEach(function (btn) {
     btn.addEventListener('click', function () {
-      var pp = getProfile(); pp.emblem = Number(btn.dataset.emb); saveProfile(pp);
+      var pp = getProfile(); pp.emblem = Number(btn.dataset.emb); pp.avatar = null; pp.specialEmblem = null; saveProfile(pp);
+      refreshProfileChip(); renderProfile();
+    });
+  });
+  $$('[data-semb]', panelEl).forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      if (!isEmblemUnlocked(btn.dataset.semb)) { toast('Locked — redeem a code to unlock this emblem', 3); return; }
+      var pp = getProfile(); pp.specialEmblem = btn.dataset.semb; pp.avatar = null; saveProfile(pp);
       refreshProfileChip(); renderProfile();
     });
   });
   $$('[data-bn]', panelEl).forEach(function (btn) {
     btn.addEventListener('click', function () {
+      if (btn.dataset.locked) { toast('Locked banner — ' + (btn.title.split(' — ')[1] || 'not unlocked yet'), 3); return; }
       var pp = getProfile(); pp.banner = btn.dataset.bn; saveProfile(pp);
       renderProfile();
     });
+  });
+  $('#dd-pfp-upload', panelEl).addEventListener('click', function () {
+    $('#dd-pfp-file', panelEl).click();
+  });
+  $('#dd-pfp-file', panelEl).addEventListener('change', function (e) {
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    if (!/^image\//.test(file.type)) { toast('Please choose an image file'); return; }
+    if (file.size > 4 * 1024 * 1024) { toast('Image too big — please use something under 4MB'); return; }
+    var reader = new FileReader();
+    reader.onload = function () {
+      /* Downscale through a canvas so huge phone photos don't bloat localStorage */
+      var img = new Image();
+      img.onload = function () {
+        var size = 256;
+        var canvas = document.createElement('canvas');
+        canvas.width = size; canvas.height = size;
+        var ctx = canvas.getContext('2d');
+        var scale = Math.max(size / img.width, size / img.height);
+        var w = img.width * scale, h = img.height * scale;
+        ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+        var dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        var pp = getProfile(); pp.avatar = dataUrl; saveProfile(pp);
+        refreshProfileChip(); renderProfile();
+        toast('Profile photo updated');
+      };
+      img.onerror = function () { toast('Could not read that image'); };
+      img.src = reader.result;
+    };
+    reader.onerror = function () { toast('Could not read that file'); };
+    reader.readAsDataURL(file);
+  });
+  var clearBtn = $('#dd-pfp-clear', panelEl);
+  if (clearBtn) {
+    clearBtn.addEventListener('click', function () {
+      var pp = getProfile(); pp.avatar = null; saveProfile(pp);
+      refreshProfileChip(); renderProfile();
+    });
+  }
+  $('#dd-redeem-btn', panelEl).addEventListener('click', function () {
+    var input = $('#dd-redeem', panelEl);
+    var res = redeemCode(input.value);
+    toast(res.msg, res.ok ? 3.5 : 2.5);
+    if (res.ok) { input.value = ''; renderProfile(); }
+  });
+  $('#dd-redeem', panelEl).addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') $('#dd-redeem-btn', panelEl).click();
   });
   $('#dd-p-reset', panelEl).addEventListener('click', function () {
     if (confirm('Reset all profile progress (XP, stats)?')) {
@@ -1097,8 +1306,7 @@ function renderCredits() {
   panelEl.innerHTML =
     '<h1>CREDITS</h1>' +
     '<div class="dd-credits">' +
-      '<h3>Game Development</h3><p><span>Creator:</span> Noorani Rizki</p>' +
-      '<h3>Special Thanks</h3><p><span>Original Concept &amp; Engine:</span> Zwoz</p>' +
+      '<h3>Game Development</h3><p><span>Creator:</span> Zwoz</p>' +
       '<h3>Technologies</h3>' +
       '<p><span>3D Engine:</span> Three.js v0.170.0</p>' +
       '<p><span>Multiplayer:</span> PeerJS v1.5.4</p>' +
