@@ -15,7 +15,7 @@
 /* Unlock the game's exposed API (game.js only exposes helpers when this exists) */
 window.__game = window.__game || {};
 
-var VERSION = '3.0.0';
+var VERSION = '3.0.1';
 var $ = function (s, r) { return (r || document).querySelector(s); };
 var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
 
@@ -188,6 +188,15 @@ function weaponById(slot, id) {
 
 /* ---------------- changelog data ---------------- */
 var CHANGELOG = [
+  { v: '3.0.1', date: '2026-09-10', title: 'Fix: Blank Screen on Load',
+    sections: {
+      Fixed: [
+        'The game can no longer fail silently to a blank page: a loading screen now shows instantly, and if anything goes wrong you get a plain-language explanation instead of nothing',
+        'Loader now diagnoses the usual culprits: opening the file directly (file://), offline/blocked CDN, missing WebGL2, or an outdated browser',
+        'One-click alternate-CDN fallback (jsdelivr <-> unpkg) when the 3D engine fails to download'
+      ]
+    }
+  },
   { v: '3.0.0', date: '2026-09-10', title: 'Final Big Update',
     sections: {
       Added: [
