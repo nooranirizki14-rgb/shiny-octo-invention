@@ -30,8 +30,8 @@ var lastPos = { x: 0, z: 8 };
 var STEPS = [
   { title: 'MOVE AROUND', text: 'Use W A S D to walk. Move around to continue.', check: function () { return moveDist > 8; } },
   { title: 'SHOOT THE DUMMY', text: 'Click to shoot the stationary dummy. Hit it 3 times!', check: function () { return dummyHp <= 40; } },
-  { title: 'MELEE SWING', text: 'Press SPACE to swing your blade at the dummy.', check: function () { return hasSwung; } },
-  { title: 'ROCKET JUMP', text: 'Press F to fire a rocket at the ground and launch yourself up!', check: function () { return hasJumped; } },
+  { title: 'MELEE SWING', text: 'Walk up to the dummy and press V to swing your blade at it.', check: function () { return hasSwung; } },
+  { title: 'ROCKET JUMP', text: 'Press F to fire a rocket at the ground and launch yourself up! (SPACE jumps, like in a real match)', check: function () { return hasJumped; } },
   { title: 'TUTORIAL COMPLETE', text: "You're ready! Click FINISH to return to the menu.", check: function () { return step >= 4; } }
 ];
 
@@ -46,7 +46,7 @@ async function start() {
     '<canvas id="dd-tut-canvas"></canvas>' +
     '<div id="dd-tut-hud">' +
       '<div id="dd-tut-step"><h2></h2><p></p></div>' +
-      '<div id="dd-tut-hint">W A S D = move · MOUSE = look · CLICK = shoot · SPACE = swing · F = rocket · ESC = quit</div>' +
+      '<div id="dd-tut-hint">W A S D = move · MOUSE = look · CLICK = shoot · V = swing · SPACE = jump · F = rocket · ESC = quit</div>' +
       '<div id="dd-tut-progress"></div>' +
       '<button type="button" id="dd-tut-finish" style="display:none">FINISH</button>' +
     '</div>';
@@ -156,8 +156,10 @@ async function start() {
 function onKeyDown(e) {
   if (!active) return;
   keys[e.code] = true;
-  if (e.code === 'Space') { e.preventDefault(); doSwing(); }
-  if (e.code === 'KeyF') { e.preventDefault(); doRocketJump(); }
+  /* Same bindings as a real match: SPACE jumps, V swings, F rockets. */
+  if (e.code === 'Space') { e.preventDefault(); doJump(); }
+  if (e.code === 'KeyV' && !e.repeat) { e.preventDefault(); doSwing(); }
+  if (e.code === 'KeyF' && !e.repeat) { e.preventDefault(); e.stopPropagation(); doRocketJump(); }
 }
 function onKeyUp(e) { keys[e.code] = false; }
 function onEsc(e) { if (e.code === 'Escape' && active) finish(); }
@@ -210,6 +212,10 @@ function doShoot() {
   tracerPos.needsUpdate = true;
   tracer.material.opacity = 0.8;
   setTimeout(function () { if (tracer) tracer.material.opacity = 0; }, 100);
+}
+
+function doJump() {
+  if (onGround) { vel.y = 9; onGround = false; }
 }
 
 function doSwing() {

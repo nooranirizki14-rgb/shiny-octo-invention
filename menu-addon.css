@@ -324,3 +324,92 @@ body.dd-tabs-on #hud .screen { overflow-y: auto; }
   pointer-events: none; display: none;
 }
 #dd-rocket-hud .dd-rkt-count { color: #ff8844; font-weight: bold; }
+
+/* ---- ADS center dot (dd-fixes): sniper-style exact-center reference
+   while aiming with non-scope guns, whose HUD crosshair hides on ADS ---- */
+#dd-adot {
+  position: absolute; left: 50%; top: 50%; width: 5px; height: 5px;
+  margin: -2.5px 0 0 -2.5px; border-radius: 50%;
+  background: #d02030; box-shadow: 0 0 0 1px rgba(250,248,238,.85);
+  opacity: 0; pointer-events: none; mix-blend-mode: multiply;
+}
+#dd-adot.on { opacity: 1; }
+#hud.nogame #dd-adot { display: none; }
+
+/* ---- rocket touch button (hidden unless coarse pointer) ---- */
+#dd-rocket-btn {
+  position: fixed; bottom: 140px; right: 20px; z-index: 51;
+  display: none;
+  font-family: 'Patrick Hand', cursive; font-size: 18px; color: #fff;
+  background: rgba(208,32,48,.85); border: 2px solid rgba(255,255,255,.4);
+  border-radius: 12px; padding: 10px 16px; cursor: pointer;
+}
+@media (pointer: coarse) {
+  #dd-rocket-btn { display: block; }
+}
+
+/* ---- error toasts (dd-fixes): failures stay visible, never silent ---- */
+#dd-errbox {
+  position: fixed; left: 12px; top: 64px; z-index: 99990;
+  display: flex; flex-direction: column; gap: 6px;
+  max-width: min(420px, 80vw); pointer-events: none;
+  font-family: 'Patrick Hand', cursive; font-size: 14px;
+}
+#dd-errbox .dd-err {
+  background: rgba(250,248,238,.95); color: #d02030;
+  border: 2px solid #d02030; border-radius: 8px;
+  padding: 6px 10px; box-shadow: 0 2px 10px rgba(0,0,0,.2);
+  transition: opacity .4s;
+}
+#dd-errbox .dd-err.out { opacity: 0; }
+
+/* ============ Party Pack v3.2 ============ */
+/* death recap */
+#dd-recap{position:fixed;left:50%;bottom:16%;transform:translateX(-50%) rotate(-1deg);background:#fffdf4;border:3px solid #1a1a1a;border-radius:12px;box-shadow:4px 4px 0 rgba(0,0,0,.35);padding:10px 18px;z-index:60;text-align:center;font-family:"Patrick Hand","Comic Sans MS",cursive;color:#1a1a1a;max-width:min(92vw,460px);pointer-events:none;animation:dd-recap-in .25s ease-out}
+@keyframes dd-recap-in{from{transform:translateX(-50%) scale(.8);opacity:0}to{transform:translateX(-50%) rotate(-1deg) scale(1);opacity:1}}
+.dd-recap-kicker{font-size:13px;letter-spacing:3px;color:#c81e5b;font-weight:bold}
+.dd-recap-main{font-size:20px;margin:2px 0}
+.dd-recap-main b{color:#1a30c0}
+.dd-recap-tip{font-size:14px;color:#555;border-top:2px dashed #bbb;margin-top:6px;padding-top:6px}
+/* weather overlays (client-side FX) */
+#dd-weather{position:fixed;inset:0;pointer-events:none;z-index:40;transition:background .6s}
+#dd-weather.dd-wx-day{background:transparent}
+#dd-weather.dd-wx-dusk{background:linear-gradient(180deg,rgba(255,140,60,.14),rgba(200,60,120,.16));mix-blend-mode:multiply}
+#dd-weather.dd-wx-night{background:linear-gradient(180deg,rgba(10,16,60,.42),rgba(4,6,28,.5));mix-blend-mode:multiply}
+#dd-weather.dd-wx-rain{background:rgba(40,70,120,.12)}
+#dd-weather.dd-wx-snow{background:rgba(200,220,255,.08)}
+#dd-precip{position:fixed;inset:0;pointer-events:none;z-index:41}
+/* party + stats tabs */
+.dd-party h2,.dd-stats h2{font-size:20px;margin:14px 0 6px;color:#1a30c0}
+.dd-party .dd-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0}
+.dd-party .dd-note{font-size:13px;color:#666}
+.dd-toggle{display:inline-flex;align-items:center;gap:8px;background:#fff;border:2px solid #1a1a1a;border-radius:10px;padding:6px 12px;font-family:inherit;font-size:16px;cursor:pointer;box-shadow:2px 2px 0 rgba(0,0,0,.25)}
+.dd-toggle.on{background:#d7f5d0}
+.dd-toggle .dd-dot{width:14px;height:14px;border-radius:50%;background:#bbb;border:2px solid #1a1a1a}
+.dd-toggle.on .dd-dot{background:#2fae4e}
+.dd-choice{display:inline-block;background:#fff;border:2px solid #1a1a1a;border-radius:10px;padding:6px 12px;font-family:inherit;font-size:15px;cursor:pointer;margin:2px;box-shadow:2px 2px 0 rgba(0,0,0,.2)}
+.dd-choice.on{background:#ffe066}
+.dd-choice:disabled{opacity:.45;cursor:default}
+.dd-chal{background:#fffdf4;border:2px solid #1a1a1a;border-radius:10px;padding:8px 12px;margin:6px 0;box-shadow:2px 2px 0 rgba(0,0,0,.2)}
+.dd-chal.done{background:#e6f9e6}
+.dd-chal .dd-cdesc{font-size:17px}
+.dd-chal .dd-cbar{height:10px;background:#eee;border:1px solid #999;border-radius:6px;margin-top:6px;overflow:hidden}
+.dd-chal .dd-cbar i{display:block;height:100%;background:#1a30c0}
+.dd-chal.done .dd-cbar i{background:#2fae4e}
+.dd-chal .dd-cmeta{font-size:13px;color:#555}
+.dd-stats .dd-sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin:8px 0}
+.dd-stats .dd-sgrid>div{background:#fff;border:2px solid #1a1a1a;border-radius:10px;padding:8px;text-align:center}
+.dd-stats .dd-sgrid b{display:block;font-size:22px;color:#1a30c0}
+.dd-stats .dd-sgrid span{font-size:13px;color:#555}
+.dd-wtable{width:100%;border-collapse:collapse;font-size:15px;margin-top:6px}
+.dd-wtable td{border-top:1px dashed #bbb;padding:4px 6px}
+.dd-wtable td:last-child{text-align:right;font-weight:bold}
+
+/* ============ Party Pack v3.2 phase 2: modes ============ */
+#dd-mode-hud{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:#fffdf4;border:3px solid #1a1a1a;border-radius:12px;box-shadow:3px 3px 0 rgba(0,0,0,.3);padding:6px 16px;z-index:55;font-family:"Patrick Hand","Comic Sans MS",cursive;font-size:19px;color:#1a1a1a;display:none;pointer-events:none;white-space:nowrap}
+#dd-vig{position:fixed;inset:0;pointer-events:none;z-index:39;transition:box-shadow .4s}
+#dd-vig.dd-vig-inf{box-shadow:inset 0 0 140px 40px rgba(200,20,40,.5)}
+#dd-vig.dd-vig-jugg{box-shadow:inset 0 0 140px 40px rgba(255,190,20,.45)}
+
+/* ============ Party Pack v3.2 phase 3: parkour ============ */
+#dd-park-hud{position:fixed;top:12px;right:12px;background:#fffdf4;border:3px solid #1a1a1a;border-radius:12px;box-shadow:3px 3px 0 rgba(0,0,0,.3);padding:6px 14px;z-index:55;font-family:"Patrick Hand","Comic Sans MS",cursive;font-size:18px;color:#1a1a1a;display:none;pointer-events:none}

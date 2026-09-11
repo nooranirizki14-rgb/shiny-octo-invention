@@ -1,5 +1,118 @@
 # Changelog
 
+## [3.2.1] — Grenade-bug hunt + bugfix pass
+- **Reported bug investigated end-to-end**: "throw grenade → big explosion → stops mid-explode → can't shoot". Audited the full engine path (throw → fuse → bounce → `boom` → damage → die → respawn/game-over), all 5 bundle edits, all 8 addons, overlays/CSS and input bindings — no defect found that freezes the loop (single exceptions can't: rAF reschedules first, and the frame-safety net converts per-frame throws into toasts). Most likely causes: dying to your own blast (solo = run over, FFA = click to respawn), or a device hitch on the 142-particle burst.
+- **New stuck-nade self-heal** (`dd-party.js`): the 500ms match poll now sweeps live nades whose fuse expired 5s+ ago without detonating (the exact "stops mid explode + frozen gun" failure class) and caps runaway nade counts at 12
+- **Frame-safety net extended** (`dd-fixes.js`): `player.reset` and `player.switchTo` are now guarded like the per-frame updates, so a respawn/switch hiccup shows a toast instead of leaving the player half-reset or weaponless
+- **Sketch-wall sync fixes** (`dd-modes.js`): wall sorting no longer drops non-wall breakables after the first wall (which shifted `brk` indices); wall expiry now uses the local clock on both ends (host/client `performance.now()` clocks are incomparable, so online walls expired at random); the host prunes dead walls so the `ddmode` broadcast never grows; match end now actually removes the predicted wall (was: leaked mesh + invisible collider)
+- **Solo KOTH rate fixed**: banked 1 point per 500ms poll (win in ~22s) — now 1 point/sec like online (45s to crown)
+- **GG emote hop fixed** (`dd-party.js`): it wrote `P.vel`, which doesn't exist — now hops via `P.body.vel`
+- **GPU leak plugs**: radar ping marks, mode markers, KOTH ring, skywriter planes and GG floor stamps now dispose their geometries/materials on removal
+- **Perf churn cuts**: laser re-tint only runs when a gun's ink actually changes (was: every poll); big-head re-seating only runs when the peer set changes (was: every 500ms)
+
+## [3.2.0] — Party Pack Phase 1: Streaks, Stats, Mutators & Challenges
+
+### Added — party tab + stats tab
+- **New PARTY tab**: match-mode picker, mutators, weather, ink gun-skins, challenges and a field manual — all in one place
+- **New STATS tab**: lifetime (level/matches/kills/wins/K-D/best score+wave), session stats and an erasures-by-weapon table
+
+### Added — kill streaks
+- **3 streak: RADAR PING** — pulsing red markers over every hostile for 3.5s, even through walls
+- **5 streak: DOODLE AIRSTRIKE** — three free cooked-variety grenades, real projectiles with full damage/netcode
+- **8 streak (then every 4): THE ERASER** — a five-rocket free volley downrange with screen shake
+- Streaks reset on death; fanfares + big announcements included
+
+### Added — fun & progression
+- **Death recap**: every death shows killer · weapon · distance + a rotating tip
+- **Mutators (instant, you-only FX)**: LOW GRAVITY rides the engine's own `gravityScale`; BIG HEADS scales every rival/enemy cranium ×1.9
+- **Client weather**: day / dusk / night (canvas dim + navy multiply) / rain / snow (2D particle overlay)
+- **Ink gun-skins**: lasers + grip accent stripes follow each gun's ink color (toggleable, default on)
+- **GG emote (H)**: happy hop + chalk GG! floor stamp (6s fade, 3s cooldown)
+- **Daily + weekly challenges** (date-seeded, auto-tracked from the kill feed): kills, per-weapon erasures, streaks, headshots, FFA wins, solo waves — auto-grant XP with fanfare
+- **Grapple (Q/E) and grenades (G) already shipped** in the engine — now documented in the field manual instead of rebuilt
+
+### Added — party modes, sketch-wall, hats (Phase 2)
+- **KING OF THE HILL**: hold the gold ring uncontested to bank points (45 wins) — online host-authoritative + solo-vs-waves with a 150 XP crown
+- **INFECTED**: random patient zero, kills spread the plague, survivors win by outlasting the 180s clock — infected get +15% speed and blade-only
+- **JUGGERNAUT**: first blood takes the crown — 3× HP, +25% damage, larger than life; 10 jugg kills (or the 210s clock) decides it
+- Modes sync over new `ddmode` net events (bundle validator whitelisted, `Qt` untouched); the host's PARTY pick rules, early ends reuse the native end screen
+- **Sketch-wall (B)**: a native 60-HP breakable ink wall — blocks bullets + bodies, 25s life, 12s cooldown, host-ordered ids so `brk` sync stays aligned
+- **Hats**: halo / crown / antenna / party cone, synced mesh-direct (`ddhat`) onto rivals' heads — crown unlocks by finishing a weekly challenge
+- **DUAL DOODLES rifle**: 0.05s-interval twin hose with mirrored in-match + loadout-preview models (new `dual` loadout-stat flag)
+- Mode wins count toward the wins challenge; new sketch-wall challenge; engine per-client `__ddSpeedMul` / `__ddDmgMul` buff flags
+
+### Added — maps, bots & world bits (Phase 3)
+- **DOODLE SCHOOL**: indoor CQB — entrance hall, 4 classrooms with desks, corridors, gym with bleachers + hoops, cafeteria, yard, flag pole and a bell tower. 12 spawns / 5 snipers / 8 pickups / 14 arena
+- **DOODLE PARKOUR**: floating obstacle course over the void — 5 checkpoint rings, beams, towers, finish gate. Live timer HUD, per-checkpoint respawns + full heals, best-time records, +100 XP per finish, pacifist (no waves)
+- **SPAR BOTS (solo)**: 0/2/4/6 named rifle bots (BOB, WALLY, ZED…) with floating nametags replace waves — new `sparbot` enemy kind, killfeed integration, streaks + challenges count bot kills
+- **Castle portcullis trap**: pressure plate on the drawbridge slams the gate shut for 6s (real collider swap) — works on rivals too
+- **RC BUDDY**: a tiny red car that follows you, hops and beeps when you score (toggleable)
+- **Skywriter plane**: a doodle plane buzzes overhead every time you call an airstrike (5 streak)
+- **School bell**: tolls once per streak level on school map (×2, ×3…)
+- Map sources now committed under `maps/` (castle/school/park) so they survive `/tmp` wipes
+
+### Fixed
+- **FFA rocket kills now credit properly.** The `pdead` net validator's `how` allow-list was missing `rocket`, so rocket kills were rejected (no credit, and a violation strike against the victim). One-token bundle fix, `.mjs`-gated
+- `dd-match-start` / `dd-match-end` are now actually dispatched (match watcher), which also repairs the rocket HUD's match reset listener
+
+## [3.1.0] — New Maps, Slot-5 Bazooka & Laser Sights
+
+### Added — maps
+- **NEW MAP: DOODLE ROOFS** (`roofs`) — a dusk city block: four rooftops linked by plank bridges, water towers, a billboard, a two-flight fire escape, a blinking antenna nest, parked cars, street lamps and clotheslines. Solo + arena (FFA) support with 12 spawns, 5 sniper perches, 8 pickups, 14 arena spawns
+- **NEW MAP: DOODLE CASTLE** (`castle`) — ramparts with walkable wall walks and four corner towers, a gatehouse with portcullis, a moat, a torch-lit keep with waving flag, a courtyard well, hay bales, weapon rack, banners, dead trees and a tiny graveyard. Same spawn/pickup counts as Roofs
+- **Doodle Balloon retired** — the public list is now District / Jungle / Harbor / Roofs / Castle. Stored or remotely-sent `balloon` values fall back to District through the existing map guards (no protocol change)
+
+### Added — rocket launcher as slot 5
+- **The bazooka is a real 5th weapon**: press `5` or scroll to it — full ADS, reload animation, ammo HUD slot, ammo pickups and a chunky 3D tube model. **F still quick-fires a rocket from any weapon**, now spending the launcher's own mag/reserve
+- **3 loadout variants**: DOODLE BAZOOKA (classic 1-tube), QUAD SCRIBBLER (4-round rocket hose, smaller blasts) and THE ERASER (one giant ×1.7 crater). New `blast` stat flows through `doodle_loadout_stats`
+- Rockets ride the **grenade netcode path** (same projectile sim + owner-authority damage), so FFA hits, kills and the kill feed just work — no protocol bump (`Qt` untouched). New `rocket` entries in the damage validator, kill-feed labels and remote-player weapon visuals (remotes render a tube, keep gun pose)
+- Kills by rocket are labeled **ROCKET** in the feed (was: GRENADE)
+
+### Added — lasers & fun
+- **Laser sights on every gun**: red emitter + beam + tip dot, on by default, **L toggles** (remembered in `localStorage`). The katana stays clean
+- **Explosive barrels**: orange barrels detonate when shot or caught in a blast (bigger boom, enemy + self damage, prop kick) and **chain-react** with each other — on every client through the existing breakable sync
+- Barrel HP raised 15 → 40 so a single stray bullet doesn't set them off
+
+### Fixed
+- Loadout preview for the rocket slot rendered a blade — now builds the actual launcher (distinct classic/quad/eraser models + thumbnails)
+- Remote players with the bazooka equipped showed a rifle and struck the katana pose — fixed (tube model + gun pose)
+- `rocket-launcher.js` slimmed from a parallel projectile sim into an integration layer (F quick-fire + HUD + reserve trickle) — no more double physics
+
+## [3.0.2] — True Aim, Lightsaber & Rocket Fixes
+
+### Fixed — aiming & sights
+- **ADS sights finally agree with bullet impacts.** Loadout weapon size was overwriting each gun's designed scale instead of multiplying it, which blew guns up to ~2× size and pushed every red-dot/bead sight high off the bullet line. Sizes are multipliers again, so sights sit dead-center like the sniper scope
+- **Bullets follow the true camera direction**, including the recoil springs — previously shots used the raw aim angles while the camera carried extra recoil motion, so impacts drifted off the crosshair/scope/dot right after firing
+- **Aimed shots kick the sight picture less** (weapon-model kick ×0.45, camera kick ×0.75 while aiming), so the 3D sight stays glued near the bullet line during fire. Hip-fire feel is untouched
+- **A tiny sniper-style center dot** now shows while aiming with non-scope guns (the HUD crosshair hides during ADS), giving an exact-center reference on every weapon
+- **Rifle red-dot enlarged 3×** — it was ~2px wide and nearly invisible, so players aimed with the sight frame instead
+
+### Fixed — lightsaber & weapon models
+- **LIGHTSABER actually works in matches now.** The saber flag never left the loadout menu (`doodle_loadout_stats` didn't include it), so every blade rendered as a plain katana — now the flag is saved and the saber engages
+- **In-game saber rebuilt as a real plasma blade** (new `dd-fixes.js` runtime patch): white-hot core, colored additive glow shell, round tip and emitter hilt, with the glow color following your blade ink — instead of a slightly fatter flat katana blade
+- **Blade size picks now apply in-game** (they were ignored; scale is a multiplier of the base like guns)
+
+### Fixed — rocket launcher
+- Rockets **explode on walls and props** (segment raycast along the flight path), not just on the floor
+- Rockets **damage enemies through the real damage pipeline** (was: silently did nothing — wrong enemy list + direct HP poking), so kills, hitmarkers, sounds and score all work
+- **FFA rivals take rocket damage** again (uses the explosive damage type the netcode accepts)
+- **Rocket-jump self-damage** goes through the real pipeline (correct max-HP scaling, hurt FX, death handling) and matches the documented 7%/3%(Boom) values
+- Rockets **reset every match** (the reset event was never sent) and refill over time as before
+- **New rocket ammo counter HUD** (+ touch-only FIRE ROCKET button on mobile) — previously the styled HUD element was never created
+- **F fires a rocket without also triggering quick-melee** (melee still fires on F when no rocket is available, and always on V)
+
+### Fixed — multiplayer
+- **Joining by code now also finds lobbies hosted from localhost/LAN/dev builds** (and vice versa) — the peer-ID prefix used to make those lobbies invisible to each other
+- **Hosting retries once automatically** when the signalling handshake times out, instead of failing outright
+- **Online failures now show an actionable hint** (same-version check, code validity, network/NAT guidance) appended to the status line
+
+### Fixed — maps & stability
+- **A failing map builder can no longer strand you in an empty world**: level loads (and the very first boot level) fall back to DOODLE DISTRICT with a notice instead of a blank scene
+- **One broken level animation can no longer freeze the whole game**: level-animated hooks run guarded and a failing one is disabled with a console warning
+- **Frame safety net**: every per-frame system (player, enemies, remote players, props, effects, HUD, audio, menu camera) is guarded, so a single hitch can no longer stop rendering and black-screen a match — failures surface as a small on-screen note (and in `window.__ddFixes.errors`) instead of silence
+- **Render watchdog**: if drawing stalls for 3s mid-match, the current map reloads automatically (with a notice); it backs off instead of looping forever
+- **Tutorial teaches the real keys**: SPACE jumps, V swings, F rockets (was: SPACE swung, nothing jumped)
+
 ## [3.0.1] — Doodle Balloon, Blank Screen & Startup
 
 ### Added
