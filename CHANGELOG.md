@@ -21,6 +21,16 @@
 - **Daily + weekly challenges** (date-seeded, auto-tracked from the kill feed): kills, per-weapon erasures, streaks, headshots, FFA wins, solo waves — auto-grant XP with fanfare
 - **Grapple (Q/E) and grenades (G) already shipped** in the engine — now documented in the field manual instead of rebuilt
 
+### Added — party modes, sketch-wall, hats (Phase 2)
+- **KING OF THE HILL**: hold the gold ring uncontested to bank points (45 wins) — online host-authoritative + solo-vs-waves with a 150 XP crown
+- **INFECTED**: random patient zero, kills spread the plague, survivors win by outlasting the 180s clock — infected get +15% speed and blade-only
+- **JUGGERNAUT**: first blood takes the crown — 3× HP, +25% damage, larger than life; 10 jugg kills (or the 210s clock) decides it
+- Modes sync over new `ddmode` net events (bundle validator whitelisted, `Qt` untouched); the host's PARTY pick rules, early ends reuse the native end screen
+- **Sketch-wall (B)**: a native 60-HP breakable ink wall — blocks bullets + bodies, 25s life, 12s cooldown, host-ordered ids so `brk` sync stays aligned
+- **Hats**: halo / crown / antenna / party cone, synced mesh-direct (`ddhat`) onto rivals' heads — crown unlocks by finishing a weekly challenge
+- **DUAL DOODLES rifle**: 0.05s-interval twin hose with mirrored in-match + loadout-preview models (new `dual` loadout-stat flag)
+- Mode wins count toward the wins challenge; new sketch-wall challenge; engine per-client `__ddSpeedMul` / `__ddDmgMul` buff flags
+
 ### Fixed
 - **FFA rocket kills now credit properly.** The `pdead` net validator's `how` allow-list was missing `rocket`, so rocket kills were rejected (no credit, and a violation strike against the victim). One-token bundle fix, `.mjs`-gated
 - `dd-match-start` / `dd-match-end` are now actually dispatched (match watcher), which also repairs the rocket HUD's match reset listener

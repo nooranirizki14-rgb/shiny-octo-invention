@@ -404,3 +404,9 @@ body.dd-tabs-on #hud .screen { overflow-y: auto; }
 .dd-wtable{width:100%;border-collapse:collapse;font-size:15px;margin-top:6px}
 .dd-wtable td{border-top:1px dashed #bbb;padding:4px 6px}
 .dd-wtable td:last-child{text-align:right;font-weight:bold}
+
+/* ============ Party Pack v3.2 phase 2: modes ============ */
+#dd-mode-hud{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:#fffdf4;border:3px solid #1a1a1a;border-radius:12px;box-shadow:3px 3px 0 rgba(0,0,0,.3);padding:6px 16px;z-index:55;font-family:"Patrick Hand","Comic Sans MS",cursive;font-size:19px;color:#1a1a1a;display:none;pointer-events:none;white-space:nowrap}
+#dd-vig{position:fixed;inset:0;pointer-events:none;z-index:39;transition:box-shadow .4s}
+#dd-vig.dd-vig-inf{box-shadow:inset 0 0 140px 40px rgba(200,20,40,.5)}
+#dd-vig.dd-vig-jugg{box-shadow:inset 0 0 140px 40px rgba(255,190,20,.45)}

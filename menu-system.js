@@ -5,7 +5,7 @@
      re-render of the menu and stay up on all menu screens (only hidden
      while a match is actually being played)
    - Solo setup: mode (Survival / Blitz / Juggernaut) + difficulty (Easy/Med/Hard)
-   - Loadout: 51 weapons (12 rifle / 12 shotgun / 12 sniper / 12 blade / 3 rocket) with 3D preview
+   - Loadout: 52 weapons (13 rifle / 12 shotgun / 12 sniper / 12 blade / 3 rocket) with 3D preview
    - Profile: banner, emblem, level + XP earned from matches
    - Data-driven changelog, settings, credits, mobile support
    ============================================================ */
@@ -86,6 +86,8 @@ rifle: [
 shotgun: [
  { id: 'shotgun_classic', name: 'CLASSIC SHOTGUN', hint: 'pump · devastating up close', desc: 'The classic pump-action page clearer. Ten pellets of nope.', ink: 0, scale: 1, bars: [80, 30, 40, 25],
    stats: { magSize: 6, reserve: 36, maxReserve: 72, interval: 0.78, damage: 19, headMul: 1.8, pellets: 10, spread: 0.062, adsSpread: 0.034, reloadDur: 0.45, auto: false, falloff: [11, 32, 0.22], cycleDur: 0.45, pvp: [16, 1.6, [9, 26, 0.15]] } },
+ { id: 'rifle_dual', name: 'DUAL DOODLES', hint: 'two guns · double trouble', desc: 'Two scribblers taped together. Twice the ink, half the accuracy, all of the fun.', ink: 1, scale: 0.95, bars: [40, 100, 85, 30],
+   stats: { magSize: 60, reserve: 300, maxReserve: 600, interval: 0.05, damage: 17, headMul: 1.8, pellets: 1, spread: 0.03, adsSpread: 0.01, reloadDur: 1.9, auto: true, falloff: null, pvp: [13, 1.8, null], dual: true } },
  { id: 'shotgun_double', name: 'DOUBLE DOODLE', hint: 'two barrels · double trouble', desc: 'Side-by-side sketch blaster. Two massive booms, then reload.', ink: 3, scale: 1.02, bars: [95, 18, 12, 22],
    stats: { magSize: 2, reserve: 40, maxReserve: 80, interval: 0.9, damage: 24, headMul: 1.8, pellets: 12, spread: 0.07, adsSpread: 0.04, reloadDur: 0.5, auto: false, falloff: [10, 28, 0.2], cycleDur: 0.5, pvp: [20, 1.6, [8, 24, 0.15]] } },
  { id: 'shotgun_auto', name: 'STREETSWEEPER', hint: 'FULL-AUTO · hold to delete', desc: 'A fully automatic hallway eraser. Ammo disappears fast.', ink: 1, scale: 1.05, bars: [65, 62, 70, 20],
@@ -201,7 +203,8 @@ var CHANGELOG = [
       'Mutators: LOW GRAVITY + BIG HEADS (instant, you-only party FX)',
       'Client weather: day / dusk / night / rain / snow overlays',
       'GG emote (H): hop + chalk stamp · daily/weekly challenges with XP',
-      'FIXED: FFA rocket kills now credit properly (pdead validator)'
+      'FIXED: FFA rocket kills now credit properly (pdead validator)',
+      'Phase 2: KOTH / INFECTED / JUGGERNAUT, sketch-wall (B), hats, DUAL DOODLES rifle'
     ] },
   { v: '3.1.0', date: '2026-09-11', title: 'New Maps, Slot-5 Bazooka & Laser Sights',
     sections: {
@@ -1028,6 +1031,7 @@ function buildRifle(T, def, i, M) {
   else { bx(T, g, M.dark, 0.06, 0.05, 0.3, 0, 0.12, 0.1); }
   if (smg) { bx(T, g, M.dark, 0.06, 0.14, 0.07, 0, -0.14, -0.32); }
   if (heavy) { bx(T, g, M.wood, 0.13, 0.14, 0.2, 0, -0.02, -0.42); }
+  if (def.dual) { var g2 = g.clone(true); g2.position.x = -0.34; g.add(g2); }
   outline(T, g, M.line);
   return g;
 }
@@ -1565,6 +1569,7 @@ function renderParty() {
   var wx = P.getWeather();
   var skins = P.isInkSkins();
   var mode = partyMode();
+  var modesLive = !!window.__ddModes;
   var chal = P.challenges();
   function mbtn(id, label, live) {
     return '<button class="dd-choice' + (mode === id ? ' on' : '') + '" data-mode="' + id + '"' +
@@ -1585,13 +1590,19 @@ function renderParty() {
       '<div class="dd-cmeta">' + tag + ' &middot; ' + c.cur + '/' + c.target + ' &middot; +' + c.xp + ' XP' +
       (c.done ? ' &middot; DONE' : '') + '</div></div>';
   }
+  var hatLib = window.__ddHats || null;
+  var curHat = hatLib ? hatLib.get() : 'none';
+  var hatBtns = hatLib ? hatLib.list().map(function (h) {
+    return '<button class="dd-choice' + (curHat === h.id ? ' on' : '') + '" data-hat="' + h.id + '"' +
+      (h.locked ? ' disabled' : '') + '>' + escapeHtml(h.label) + (h.locked ? ' \uD83D\uDD12' : '') + '</button>';
+  }).join('') : '<span class="dd-note">Hats loading&hellip;</span>';
   var html = '<h1>PARTY</h1><div class="dd-party">' +
     '<h2>MATCH MODE (online)</h2><div class="dd-row">' +
     mbtn('ffa', 'FFA', true) +
-    mbtn('koth', 'KING OF THE HILL (soon)', false) +
-    mbtn('infected', 'INFECTED (soon)', false) +
-    mbtn('jugg', 'JUGGERNAUT (soon)', false) +
-    '</div><div class="dd-note">The host&apos;s pick applies when the match starts. New modes land in Phase 2.</div>' +
+    mbtn('koth', 'KING OF THE HILL', modesLive) +
+    mbtn('infected', 'INFECTED', modesLive) +
+    mbtn('jugg', 'JUGGERNAUT', modesLive) +
+    '</div><div class="dd-note">The host&apos;s pick rules online matches. Solo supports FFA + KOTH-vs-waves.</div>' +
     '<h2>MUTATORS (instant, you-only FX)</h2><div class="dd-row">' +
     tgl('lowgrav', 'LOW GRAVITY', muts.lowgrav) +
     tgl('bighead', 'BIG HEADS', muts.bighead) +
@@ -1602,12 +1613,13 @@ function renderParty() {
     '<h2>INK GUN-SKINS</h2><div class="dd-row">' +
     '<button class="dd-toggle' + (skins ? ' on' : '') + '" data-skins="1"><span class="dd-dot"></span>INK LASERS + ACCENTS</button>' +
     '</div><div class="dd-note">Lasers and grip stripes follow each gun&apos;s ink color.</div>' +
+    '<h2>HAT (seen by others online)</h2><div class="dd-row">' + hatBtns + '</div>' +
     '<h2>CHALLENGES</h2>' +
     chal.daily.map(function (c) { return chalRow(c, 'DAILY'); }).join('') +
     chalRow(chal.weekly, 'WEEKLY') +
     '<h2>FIELD MANUAL</h2><div class="dd-note">' +
     'G grenade (hold to cook) &middot; Q / E grapple &middot; F rocket &middot; L laser sights &middot; H GG emote<br>' +
-    '1&ndash;5 / wheel weapons &middot; R reload &middot; V melee &middot; X dash &middot; KOTH / B sketch-wall land in Phase 2' +
+    '1&ndash;5 / wheel weapons &middot; R reload &middot; V melee &middot; X dash &middot; B sketch-wall &middot; host picks modes in PARTY' +
     '</div></div>';
   panelEl.innerHTML = html;
   function each(sel, fn) {
@@ -1626,6 +1638,9 @@ function renderParty() {
   });
   each('[data-mode]', function (b) {
     b.addEventListener('click', function () { store.set('doodle_party_mode', b.getAttribute('data-mode')); renderParty(); });
+  });
+  each('[data-hat]', function (b) {
+    b.addEventListener('click', function () { if (hatLib) hatLib.set(b.getAttribute('data-hat')); renderParty(); });
   });
   var sk = panelEl.querySelector('[data-skins]');
   if (sk) sk.addEventListener('click', function () { P.setInkSkins(!P.isInkSkins()); renderParty(); });

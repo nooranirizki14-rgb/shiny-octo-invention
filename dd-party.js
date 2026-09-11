@@ -642,6 +642,7 @@ var CHAL_POOL = [
   { id: 'd_heads2', desc: '2 headshot erasures', metric: 'headshots', target: 2, xp: 80 },
   { id: 'd_win1', desc: 'Win 1 FFA match', metric: 'wins', target: 1, xp: 90 },
   { id: 'd_wave6', desc: 'Reach wave 6 in solo', metric: 'wave', target: 6, xp: 70 },
+  { id: 'd_wall2', desc: 'Place 2 sketch-walls (B)', metric: 'walls', target: 2, xp: 60 },
   { id: 'd_sniper3', desc: '3 sniper erasures', metric: 'sniper', target: 3, xp: 70 }
 ];
 var CHAL_WEEKLY = { id: 'w_erase50', desc: 'Erase 50 doodles', metric: 'kills', target: 50, xp: 300 };
@@ -778,6 +779,7 @@ function detectWin() {
   /* ffa win = my kills top the scores table */
   try {
     var g = game();
+    if (window.__ddModes && window.__ddModes.mode && window.__ddModes.mode() !== 'ffa') return false;
     if (!g || !g.scores || typeof g.scores.values !== 'function') return false;
     var mine = -1, best = -1;
     Array.from(g.scores.entries()).forEach(function (kv) {
@@ -888,6 +890,30 @@ function boot() {
   watchFeed();
   setInterval(pollMatch, 500);
 
+  /* party-mode wins (crowned by dd-modes, not by frag count) */
+  window.addEventListener('dd-mode-win', function (ev) {
+    try {
+      var d = (ev && ev.detail) || {};
+      if (d.win) {
+        session.wins++;
+        var st = chalState();
+        st.d.__winCount = (st.d.__winCount || 0) + 1;
+        chalSave(st);
+        chalBump('wins', st.d.__winCount);
+        toast('★ MODE WIN counts toward challenges!');
+      }
+    } catch (e) {}
+  });
+  /* sketch-wall placements */
+  window.addEventListener('dd-wall', function () {
+    try {
+      var st = chalState();
+      st.d.__walls = (st.d.__walls || 0) + 1;
+      chalSave(st);
+      chalBump('walls', st.d.__walls);
+    } catch (e) {}
+  });
+
   /* H = GG emote (capture not needed — the engine ignores H) */
   document.addEventListener('keydown', function (e) {
     try {
@@ -902,11 +928,11 @@ function boot() {
   try {
     var g = game();
     if (g && g.net && typeof g.net.on === 'function') {
-      g.net.on('ddhat', function (d) {
-        try { if (window.__ddHats && window.__ddHats.apply) window.__ddHats.apply(d); } catch (e) {}
+      g.net.on('ddhat', function (d, from) {
+        try { if (window.__ddHats && window.__ddHats.apply) window.__ddHats.apply(d, from); } catch (e) {}
       });
-      g.net.on('ddmode', function (d) {
-        try { if (window.__ddModes && window.__ddModes.apply) window.__ddModes.apply(d); } catch (e) {}
+      g.net.on('ddmode', function (d, from) {
+        try { if (window.__ddModes && window.__ddModes.apply) window.__ddModes.apply(d, from); } catch (e) {}
       });
     }
   } catch (e) {}
