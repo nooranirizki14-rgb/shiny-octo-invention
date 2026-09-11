@@ -10,16 +10,11 @@ A static browser game ("Doodle District") built with vanilla HTML/CSS/JS + Three
 - three.js and PeerJS are vendored under `vendor/` and served locally, so the game boots with no internet access. Only Google Fonts is still remote, and it is loaded non-blocking (purely cosmetic).
 
 ## Files
-- `index.html` — entry point (import map for three.js is injected by an inline
-  snippet so the boot overlay can switch between the bundled copy and the
-  jsdelivr/unpkg CDNs; localStorage `dd_cdn`, default `local`)
+- `index.html` — entry point. Plain static import map pointing three.js at
+  the bundled copy in `vendor/`. No loader, no loading screen: the page goes
+  straight to the game's own main menu.
 - `vendor/` — bundled three.js + PeerJS (with their licenses). Keep the paths
   in the index.html import map and the `?v=` in sync when upgrading.
-- `boot.js` — boot watchdog + error overlay (classic script, runs first).
-  There is deliberately no loading screen: it renders nothing during a normal
-  load and builds its overlay lazily, only on failure. Diagnoses blank-page
-  causes (file://, old browser, no WebGL2, engine files missing/blocked) and
-  watchdogs `window.__DD_gameBooted`.
 - `game.7LCERBLR.js` — the game engine (minified ES module, imports three).
   Sets `window.__DD_gameBooted=true` as its last step — do not remove.
 - `menu-system.js` — extended menu UI (tabs, loadout, profile, settings)
