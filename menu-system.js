@@ -15,7 +15,7 @@
 /* Unlock the game's exposed API (game.js only exposes helpers when this exists) */
 window.__game = window.__game || {};
 
-var VERSION = '3.1.0';
+var VERSION = '3.2.0';
 var $ = function (s, r) { return (r || document).querySelector(s); };
 var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
 
@@ -192,6 +192,17 @@ function weaponById(slot, id) {
 
 /* ---------------- changelog data ---------------- */
 var CHANGELOG = [
+  { v: '3.2.0', date: '2026-09-11', title: 'Party Pack Phase 1',
+    items: [
+      'PARTY tab: mutators, weather, ink gun-skins, challenges, field manual',
+      'STATS tab: lifetime + session + per-weapon kill stats',
+      'Kill streaks: radar ping (3), doodle airstrike (5), the Eraser volley (8)',
+      'Death recap: killer, weapon, distance + a tip, every time you get erased',
+      'Mutators: LOW GRAVITY + BIG HEADS (instant, you-only party FX)',
+      'Client weather: day / dusk / night / rain / snow overlays',
+      'GG emote (H): hop + chalk stamp · daily/weekly challenges with XP',
+      'FIXED: FFA rocket kills now credit properly (pdead validator)'
+    ] },
   { v: '3.1.0', date: '2026-09-11', title: 'New Maps, Slot-5 Bazooka & Laser Sights',
     sections: {
       Added: [
@@ -589,6 +600,8 @@ var TABS = [
   { id: 'play', label: 'PLAY' },
   { id: 'loadout', label: 'LOADOUT' },
   { id: 'leaderboard', label: 'RANKS' },
+  { id: 'party', label: 'PARTY' },
+  { id: 'stats', label: 'STATS' },
   { id: 'profile', label: 'PROFILE' },
   { id: 'settings', label: 'SETTINGS' },
   { id: 'changelog', label: 'CHANGELOG' },
@@ -733,6 +746,8 @@ function refreshChrome() {
   if (setupOpen) renderSetup();
   else if (currentTab === 'loadout') renderLoadout();
   else if (currentTab === 'leaderboard') renderLeaderboard();
+  else if (currentTab === 'party') renderParty();
+  else if (currentTab === 'stats') renderStats();
   else if (currentTab === 'profile') renderProfile();
   else if (currentTab === 'settings') renderSettings();
   else if (currentTab === 'changelog') renderChangelog();
@@ -1535,6 +1550,123 @@ function renderChangelog() {
             e.sections[sec].map(function (li) { return '<li>' + li + '</li>'; }).join('') + '</ul>';
         }).join('') + '</div>';
     }).join('') + '</div>';
+}
+
+/* ---------------- party ---------------- */
+function partyMode() { return store.get('doodle_party_mode', 'ffa'); }
+function renderParty() {
+  stopPreview();
+  var P = window.__ddParty || null;
+  if (!P) {
+    panelEl.innerHTML = '<h1>PARTY</h1><div class="dd-party"><div class="dd-note">Party pack is still loading&hellip; reopen this tab in a few seconds.</div></div>';
+    return;
+  }
+  var muts = P.getMutators();
+  var wx = P.getWeather();
+  var skins = P.isInkSkins();
+  var mode = partyMode();
+  var chal = P.challenges();
+  function mbtn(id, label, live) {
+    return '<button class="dd-choice' + (mode === id ? ' on' : '') + '" data-mode="' + id + '"' +
+      (live ? '' : ' disabled') + '>' + label + '</button>';
+  }
+  function tgl(kind, label, on) {
+    return '<button class="dd-toggle' + (on ? ' on' : '') + '" data-mut="' + kind + '">' +
+      '<span class="dd-dot"></span>' + label + '</button>';
+  }
+  function wxbtn(id, label) {
+    return '<button class="dd-choice' + (wx === id ? ' on' : '') + '" data-wx="' + id + '">' + label + '</button>';
+  }
+  function chalRow(c, tag) {
+    var pct = c.target ? Math.round(100 * Math.min(c.cur, c.target) / c.target) : 0;
+    return '<div class="dd-chal' + (c.done ? ' done' : '') + '"><div class="dd-cdesc">' +
+      (c.done ? '&#9733; ' : '') + escapeHtml(c.desc) + '</div>' +
+      '<div class="dd-cbar"><i style="width:' + pct + '%"></i></div>' +
+      '<div class="dd-cmeta">' + tag + ' &middot; ' + c.cur + '/' + c.target + ' &middot; +' + c.xp + ' XP' +
+      (c.done ? ' &middot; DONE' : '') + '</div></div>';
+  }
+  var html = '<h1>PARTY</h1><div class="dd-party">' +
+    '<h2>MATCH MODE (online)</h2><div class="dd-row">' +
+    mbtn('ffa', 'FFA', true) +
+    mbtn('koth', 'KING OF THE HILL (soon)', false) +
+    mbtn('infected', 'INFECTED (soon)', false) +
+    mbtn('jugg', 'JUGGERNAUT (soon)', false) +
+    '</div><div class="dd-note">The host&apos;s pick applies when the match starts. New modes land in Phase 2.</div>' +
+    '<h2>MUTATORS (instant, you-only FX)</h2><div class="dd-row">' +
+    tgl('lowgrav', 'LOW GRAVITY', muts.lowgrav) +
+    tgl('bighead', 'BIG HEADS', muts.bighead) +
+    '</div><div class="dd-note">Pure party chaos, visible only to you. Great for clips.</div>' +
+    '<h2>WEATHER (you-only FX)</h2><div class="dd-row">' +
+    wxbtn('day', 'DAY') + wxbtn('dusk', 'DUSK') + wxbtn('night', 'NIGHT') + wxbtn('rain', 'RAIN') + wxbtn('snow', 'SNOW') +
+    '</div>' +
+    '<h2>INK GUN-SKINS</h2><div class="dd-row">' +
+    '<button class="dd-toggle' + (skins ? ' on' : '') + '" data-skins="1"><span class="dd-dot"></span>INK LASERS + ACCENTS</button>' +
+    '</div><div class="dd-note">Lasers and grip stripes follow each gun&apos;s ink color.</div>' +
+    '<h2>CHALLENGES</h2>' +
+    chal.daily.map(function (c) { return chalRow(c, 'DAILY'); }).join('') +
+    chalRow(chal.weekly, 'WEEKLY') +
+    '<h2>FIELD MANUAL</h2><div class="dd-note">' +
+    'G grenade (hold to cook) &middot; Q / E grapple &middot; F rocket &middot; L laser sights &middot; H GG emote<br>' +
+    '1&ndash;5 / wheel weapons &middot; R reload &middot; V melee &middot; X dash &middot; KOTH / B sketch-wall land in Phase 2' +
+    '</div></div>';
+  panelEl.innerHTML = html;
+  function each(sel, fn) {
+    var n = panelEl.querySelectorAll(sel);
+    for (var i = 0; i < n.length; i++) fn(n[i]);
+  }
+  each('[data-mut]', function (b) {
+    b.addEventListener('click', function () {
+      var k = b.getAttribute('data-mut');
+      P.setMutator(k, !P.getMutators()[k]);
+      renderParty();
+    });
+  });
+  each('[data-wx]', function (b) {
+    b.addEventListener('click', function () { P.setWeather(b.getAttribute('data-wx')); renderParty(); });
+  });
+  each('[data-mode]', function (b) {
+    b.addEventListener('click', function () { store.set('doodle_party_mode', b.getAttribute('data-mode')); renderParty(); });
+  });
+  var sk = panelEl.querySelector('[data-skins]');
+  if (sk) sk.addEventListener('click', function () { P.setInkSkins(!P.isInkSkins()); renderParty(); });
+}
+
+/* ---------------- stats ---------------- */
+var STAT_WLABELS = { rifle: 'RIFLE', shotgun: 'SHOTGUN', sniper: 'SNIPER', revolver: 'REVOLVER', blade: 'BLADE', grenade: 'GRENADE', rocket: 'ROCKET', fall: 'FALL', unknown: 'OTHER' };
+function renderStats() {
+  stopPreview();
+  var p = getProfile();
+  var lv = levelForXP(p.xp);
+  var P = window.__ddParty || null;
+  var s = P ? P.session : { kills: 0, deaths: 0, streak: 0, best: 0, headshots: 0, matches: 0, wins: 0 };
+  var lw = (P && P.lifeWeapons) || {};
+  var ok = p.onlineKills || 0, od = p.onlineDeaths || 0;
+  var kd = od ? (ok / od).toFixed(2) : '&mdash;';
+  var names = Object.keys(lw).sort(function (a, b) { return (lw[b] || 0) - (lw[a] || 0); });
+  var wrows = names.length ? names.map(function (k) {
+    return '<tr><td>' + escapeHtml(STAT_WLABELS[k] || k.toUpperCase()) + '</td><td>' + (lw[k] || 0) + '</td></tr>';
+  }).join('') : '<tr><td colspan="2">No erasures tracked yet — go draw some blood.</td></tr>';
+  panelEl.innerHTML = '<h1>STATS</h1><div class="dd-stats">' +
+    '<h2>LIFETIME</h2><div class="dd-sgrid">' +
+    '<div><b>' + lv.level + '</b><span>level</span></div>' +
+    '<div><b>' + p.matches + '</b><span>matches</span></div>' +
+    '<div><b>' + p.kills + '</b><span>kills</span></div>' +
+    '<div><b>' + (p.wins || 0) + '</b><span>ffa wins</span></div>' +
+    '<div><b>' + ok + ' / ' + od + '</b><span>online k / d</span></div>' +
+    '<div><b>' + kd + '</b><span>online k/d</span></div>' +
+    '<div><b>' + p.bestScore + '</b><span>best score</span></div>' +
+    '<div><b>' + p.bestWave + '</b><span>best wave</span></div>' +
+    '</div>' +
+    '<h2>THIS SESSION</h2><div class="dd-sgrid">' +
+    '<div><b>' + s.kills + '</b><span>kills</span></div>' +
+    '<div><b>' + s.deaths + '</b><span>deaths</span></div>' +
+    '<div><b>' + s.best + '</b><span>best streak</span></div>' +
+    '<div><b>' + s.headshots + '</b><span>headshots</span></div>' +
+    '<div><b>' + s.matches + '</b><span>matches</span></div>' +
+    '<div><b>' + s.wins + '</b><span>wins</span></div>' +
+    '</div>' +
+    '<h2>ERASURES BY WEAPON</h2><table class="dd-wtable">' + wrows + '</table>' +
+    '</div>';
 }
 
 /* ---------------- credits ---------------- */

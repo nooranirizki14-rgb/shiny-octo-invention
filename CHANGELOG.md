@@ -1,5 +1,30 @@
 # Changelog
 
+## [3.2.0] — Party Pack Phase 1: Streaks, Stats, Mutators & Challenges
+
+### Added — party tab + stats tab
+- **New PARTY tab**: match-mode picker, mutators, weather, ink gun-skins, challenges and a field manual — all in one place
+- **New STATS tab**: lifetime (level/matches/kills/wins/K-D/best score+wave), session stats and an erasures-by-weapon table
+
+### Added — kill streaks
+- **3 streak: RADAR PING** — pulsing red markers over every hostile for 3.5s, even through walls
+- **5 streak: DOODLE AIRSTRIKE** — three free cooked-variety grenades, real projectiles with full damage/netcode
+- **8 streak (then every 4): THE ERASER** — a five-rocket free volley downrange with screen shake
+- Streaks reset on death; fanfares + big announcements included
+
+### Added — fun & progression
+- **Death recap**: every death shows killer · weapon · distance + a rotating tip
+- **Mutators (instant, you-only FX)**: LOW GRAVITY rides the engine's own `gravityScale`; BIG HEADS scales every rival/enemy cranium ×1.9
+- **Client weather**: day / dusk / night (canvas dim + navy multiply) / rain / snow (2D particle overlay)
+- **Ink gun-skins**: lasers + grip accent stripes follow each gun's ink color (toggleable, default on)
+- **GG emote (H)**: happy hop + chalk GG! floor stamp (6s fade, 3s cooldown)
+- **Daily + weekly challenges** (date-seeded, auto-tracked from the kill feed): kills, per-weapon erasures, streaks, headshots, FFA wins, solo waves — auto-grant XP with fanfare
+- **Grapple (Q/E) and grenades (G) already shipped** in the engine — now documented in the field manual instead of rebuilt
+
+### Fixed
+- **FFA rocket kills now credit properly.** The `pdead` net validator's `how` allow-list was missing `rocket`, so rocket kills were rejected (no credit, and a violation strike against the victim). One-token bundle fix, `.mjs`-gated
+- `dd-match-start` / `dd-match-end` are now actually dispatched (match watcher), which also repairs the rocket HUD's match reset listener
+
 ## [3.1.0] — New Maps, Slot-5 Bazooka & Laser Sights
 
 ### Added — maps
