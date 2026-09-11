@@ -324,3 +324,26 @@ body.dd-tabs-on #hud .screen { overflow-y: auto; }
   pointer-events: none; display: none;
 }
 #dd-rocket-hud .dd-rkt-count { color: #ff8844; font-weight: bold; }
+
+/* ---- ADS center dot (dd-fixes): sniper-style exact-center reference
+   while aiming with non-scope guns, whose HUD crosshair hides on ADS ---- */
+#dd-adot {
+  position: absolute; left: 50%; top: 50%; width: 5px; height: 5px;
+  margin: -2.5px 0 0 -2.5px; border-radius: 50%;
+  background: #d02030; box-shadow: 0 0 0 1px rgba(250,248,238,.85);
+  opacity: 0; pointer-events: none; mix-blend-mode: multiply;
+}
+#dd-adot.on { opacity: 1; }
+#hud.nogame #dd-adot { display: none; }
+
+/* ---- rocket touch button (hidden unless coarse pointer) ---- */
+#dd-rocket-btn {
+  position: fixed; bottom: 140px; right: 20px; z-index: 51;
+  display: none;
+  font-family: 'Patrick Hand', cursive; font-size: 18px; color: #fff;
+  background: rgba(208,32,48,.85); border: 2px solid rgba(255,255,255,.4);
+  border-radius: 12px; padding: 10px 16px; cursor: pointer;
+}
+@media (pointer: coarse) {
+  #dd-rocket-btn { display: block; }
+}

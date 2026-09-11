@@ -15,7 +15,7 @@
 /* Unlock the game's exposed API (game.js only exposes helpers when this exists) */
 window.__game = window.__game || {};
 
-var VERSION = '3.0.1';
+var VERSION = '3.0.2';
 var $ = function (s, r) { return (r || document).querySelector(s); };
 var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
 
@@ -188,6 +188,26 @@ function weaponById(slot, id) {
 
 /* ---------------- changelog data ---------------- */
 var CHANGELOG = [
+  { v: '3.0.2', date: '2026-09-11', title: 'True Aim, Lightsaber & Rocket Fixes',
+    sections: {
+      Fixed: [
+        'ADS sights finally agree with bullet impacts: loadout weapon size no longer breaks sight alignment (guns also render at their intended size again)',
+        'Bullets now follow the true camera direction during recoil, and aimed shots kick the sight picture less — the red dot stays on the bullet line like the sniper scope',
+        'A tiny center dot appears while aiming with non-scope guns, plus a bigger, actually visible rifle red-dot',
+        'LIGHTSABER works in real matches now: the saber flag finally reaches the game, and the in-game model is a real glowing plasma blade (white core, colored glow, round tip, emitter hilt)',
+        'Blade size picks from the loadout now apply in-game too',
+        'Rockets work: they explode on walls (not just floors), damage enemies properly with kills/score, hurt FFA rivals, rocket-jump with proper self-damage, reset every match, and show an ammo counter (+ touch fire button)',
+        'Pressing F fires a rocket without also triggering the melee swing (melee still on F when no rockets, always on V)',
+        'Joining with a code now also finds lobbies hosted from localhost / LAN / dev builds and vice versa',
+        'Hosting retries once when matchmaking is slow, and online failures show a concrete next step',
+        'A glitching map can no longer leave you staring at an empty world — the game falls back to DOODLE DISTRICT, and one broken level animation can no longer freeze the game',
+        'Tutorial teaches the real keys: SPACE jumps, V swings, F rockets'
+      ],
+      Changed: [
+        'Weapon sizes in the loadout are multipliers of each gun\'s designed size, as intended'
+      ]
+    }
+  },
   { v: '3.0.1', date: '2026-09-11', title: 'Doodle Balloon, Blank Screen & Startup',
     sections: {
       Fixed: [
@@ -510,8 +530,11 @@ function setLoadout(l) {
     var s = Object.assign({}, found.def.stats);
     s.name = found.def.name;
     s.hint = found.def.hint;
-    if (slot !== 'katana' && slot !== 'explosive') { s.ink = found.def.ink; s.scale = found.def.scale; }
+    if (slot !== 'explosive') { s.ink = found.def.ink; s.scale = found.def.scale; }
     else { s.ink = found.def.ink; }
+    /* the in-game blade reads s.saber to become a lightsaber — without this
+       the flag never left the menu and every blade rendered as a katana */
+    if (found.def.saber) s.saber = true;
     stats[slot] = s;
   });
   store.set('doodle_loadout_stats', stats);

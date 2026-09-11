@@ -1,5 +1,38 @@
 # Changelog
 
+## [3.0.2] — True Aim, Lightsaber & Rocket Fixes
+
+### Fixed — aiming & sights
+- **ADS sights finally agree with bullet impacts.** Loadout weapon size was overwriting each gun's designed scale instead of multiplying it, which blew guns up to ~2× size and pushed every red-dot/bead sight high off the bullet line. Sizes are multipliers again, so sights sit dead-center like the sniper scope
+- **Bullets follow the true camera direction**, including the recoil springs — previously shots used the raw aim angles while the camera carried extra recoil motion, so impacts drifted off the crosshair/scope/dot right after firing
+- **Aimed shots kick the sight picture less** (weapon-model kick ×0.45, camera kick ×0.75 while aiming), so the 3D sight stays glued near the bullet line during fire. Hip-fire feel is untouched
+- **A tiny sniper-style center dot** now shows while aiming with non-scope guns (the HUD crosshair hides during ADS), giving an exact-center reference on every weapon
+- **Rifle red-dot enlarged 3×** — it was ~2px wide and nearly invisible, so players aimed with the sight frame instead
+
+### Fixed — lightsaber & weapon models
+- **LIGHTSABER actually works in matches now.** The saber flag never left the loadout menu (`doodle_loadout_stats` didn't include it), so every blade rendered as a plain katana — now the flag is saved and the saber engages
+- **In-game saber rebuilt as a real plasma blade** (new `dd-fixes.js` runtime patch): white-hot core, colored additive glow shell, round tip and emitter hilt, with the glow color following your blade ink — instead of a slightly fatter flat katana blade
+- **Blade size picks now apply in-game** (they were ignored; scale is a multiplier of the base like guns)
+
+### Fixed — rocket launcher
+- Rockets **explode on walls and props** (segment raycast along the flight path), not just on the floor
+- Rockets **damage enemies through the real damage pipeline** (was: silently did nothing — wrong enemy list + direct HP poking), so kills, hitmarkers, sounds and score all work
+- **FFA rivals take rocket damage** again (uses the explosive damage type the netcode accepts)
+- **Rocket-jump self-damage** goes through the real pipeline (correct max-HP scaling, hurt FX, death handling) and matches the documented 7%/3%(Boom) values
+- Rockets **reset every match** (the reset event was never sent) and refill over time as before
+- **New rocket ammo counter HUD** (+ touch-only FIRE ROCKET button on mobile) — previously the styled HUD element was never created
+- **F fires a rocket without also triggering quick-melee** (melee still fires on F when no rocket is available, and always on V)
+
+### Fixed — multiplayer
+- **Joining by code now also finds lobbies hosted from localhost/LAN/dev builds** (and vice versa) — the peer-ID prefix used to make those lobbies invisible to each other
+- **Hosting retries once automatically** when the signalling handshake times out, instead of failing outright
+- **Online failures now show an actionable hint** (same-version check, code validity, network/NAT guidance) appended to the status line
+
+### Fixed — maps & stability
+- **A failing map builder can no longer strand you in an empty world**: level loads (and the very first boot level) fall back to DOODLE DISTRICT with a notice instead of a blank scene
+- **One broken level animation can no longer freeze the whole game**: level-animated hooks run guarded and a failing one is disabled with a console warning
+- **Tutorial teaches the real keys**: SPACE jumps, V swings, F rockets (was: SPACE swung, nothing jumped)
+
 ## [3.0.1] — Doodle Balloon, Blank Screen & Startup
 
 ### Added

@@ -61,10 +61,13 @@ function init() {
   }
   loop();
 
-  /* Listen for key press */
+  /* Listen for key press (capture: runs before the game's own key handler).
+     F also triggers the game's quick-melee, so only swallow the key when a
+     rocket actually leaves the tube — otherwise melee still works on F. */
   document.addEventListener('keydown', function (e) {
-    if (e.code === 'KeyF' && !e.repeat) {
+    if (e.code === 'KeyF' && !e.repeat && canFire()) {
       e.preventDefault();
+      e.stopPropagation();
       tryFire();
     }
   }, true);
@@ -74,7 +77,50 @@ function init() {
     tryFire();
   });
 
+  createHud();
+
   console.log('[DD Rocket] Rocket launcher ability initialized');
+}
+
+/* Ammo counter (+ touch fire button) so players can see and use rockets */
+var hudEl = null, hudBtn = null, hudText = '';
+function createHud() {
+  try {
+    if (document.getElementById('dd-rocket-hud')) return;
+    hudEl = document.createElement('div');
+    hudEl.id = 'dd-rocket-hud';
+    hudEl.innerHTML = 'ROCKETS <span class="dd-rkt-count"></span>';
+    document.body.appendChild(hudEl);
+    /* Touch-only fire button (hidden on mouse/keyboard setups via CSS) */
+    hudBtn = document.createElement('button');
+    hudBtn.type = 'button';
+    hudBtn.id = 'dd-rocket-btn';
+    hudBtn.textContent = 'FIRE ROCKET';
+    hudBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      tryFire();
+    });
+    document.body.appendChild(hudBtn);
+  } catch (e) {}
+}
+
+function updateHud() {
+  if (!hudEl) return;
+  try {
+    var show = isInMatch();
+    hudEl.style.display = show ? 'block' : 'none';
+    if (hudBtn) hudBtn.style.display = show ? '' : 'none';
+    if (!show) return;
+    var t = state.cooldown > 0
+      ? state.rockets + ' (wait ' + state.cooldown.toFixed(1) + 's)'
+      : String(state.rockets);
+    if (t !== hudText) {
+      hudText = t;
+      var c = hudEl.querySelector('.dd-rkt-count');
+      if (c) c.textContent = t;
+    }
+  } catch (e) {}
 }
 
 function isInMatch() {
@@ -86,29 +132,25 @@ function isInMatch() {
   } catch (e) { return false; }
 }
 
-function tryFire() {
-  if (!state.active || !isInMatch()) return;
-  if (state.cooldown > 0 || state.rockets <= 0) return;
-
+function canFire() {
+  if (!state.active || !isInMatch()) return false;
+  if (state.cooldown > 0 || state.rockets <= 0) return false;
   var g = window.__game;
-  if (!g || !g.player || !g.player.alive) return;
+  if (!g || !g.player || !g.player.alive) return false;
+  return true;
+}
 
-  var B = g.player;
-  var THREE = window.__game.ctx && window.__game.ctx.scene ? null : null;
-  /* Access three via import (it's already loaded by the game) */
-  var T = null;
-  try {
-    /* The game imports three as a module, but we can access it via the game's objects */
-    var anyMesh = g.ctx.scene.children[0];
-    if (anyMesh && anyMesh.geometry) T = anyMesh.geometry.constructor.constructor; /* hacky but works */
-  } catch (e) {}
-
-  /* Use the game's three namespace from the import map */
-  if (!T) {
-    import('three').then(function (mod) { fireRocket(mod, g); }).catch(function () {});
-    return;
-  }
-  fireRocket(T, g);
+var threeNS = null;
+function tryFire() {
+  if (!canFire()) return;
+  var g = window.__game;
+  /* three.js is import-mapped to the vendored build; the module namespace
+     is cached by the browser after the first import. */
+  if (threeNS) { fireRocket(threeNS, g); return; }
+  import('three').then(function (mod) {
+    threeNS = mod;
+    if (canFire()) fireRocket(mod, window.__game);
+  }).catch(function () {});
 }
 
 function fireRocket(T, g) {
@@ -142,15 +184,41 @@ function fireRocket(T, g) {
   state.rockets--;
   state.cooldown = COOLDOWN;
 
-  /* Muzzle flash */
+  /* Muzzle flash (ink ids: 0 blue, 1 red, 2 black, 3 orange, 4 green, 5 pink) */
   if (effects && effects.strokeBurst) {
-    effects.strokeBurst(B.eye, { r: 0.9, g: 0.3, b: 0.1 }, 6, 4, { life: 0.15, size: 0.08 });
+    effects.strokeBurst(B.eye, 3, 6, 4, { life: 0.15, size: 0.08 });
   }
+  try {
+    var audio = g.ctx && g.ctx.audio;
+    if (audio && audio.shotgunFire) audio.shotgunFire();
+  } catch (e) {}
+}
+
+var lastMatchState = null;
+function resetForMatch() {
+  state.rockets = MAX_ROCKETS;
+  state.cooldown = 0;
+  state.refillT = 0;
+  try {
+    var sc = window.__game && window.__game.ctx && window.__game.ctx.scene;
+    state.projectiles.forEach(function (p) { if (sc) sc.remove(p.mesh); });
+  } catch (e) {}
+  state.projectiles = [];
 }
 
 function update(dt) {
   if (!state.active) return;
   state.cooldown = Math.max(0, state.cooldown - dt);
+  updateHud();
+
+  /* New match / run detection (the old dd-match-start event is never sent
+     by the game, so watch the state machine instead). */
+  try {
+    var gs = window.__game && window.__game.game;
+    var cur = gs ? gs.state : null;
+    if (cur === 'play' && lastMatchState !== 'play') resetForMatch();
+    lastMatchState = cur;
+  } catch (e) {}
 
   /* Refill rockets on respawn */
   try {
@@ -179,7 +247,9 @@ function update(dt) {
     var p = state.projectiles[i];
     p.life -= dt;
 
-    /* Move rocket */
+    /* Move rocket (remember where the step started for hit tests) */
+    if (!p.prev) p.prev = p.mesh.position.clone();
+    else p.prev.copy(p.mesh.position);
     p.vel.y -= 9.8 * dt * 0.3; /* slight gravity */
     p.mesh.position.addScaledVector(p.vel, dt);
     p.mesh.rotation.x += dt * 10;
@@ -187,35 +257,39 @@ function update(dt) {
 
     /* Trail */
     if (effects && effects.strokeBurst && Math.random() < 0.5) {
-      effects.strokeBurst(p.mesh.position, { r: 0.8, g: 0.4, b: 0.1 }, 3, 2, { life: 0.2, size: 0.05 });
+      effects.strokeBurst(p.mesh.position, 3, 3, 2, { life: 0.2, size: 0.05 });
     }
 
     var hit = false;
     var hitPos = null;
 
-    /* Check ground collision */
-    if (p.mesh.position.y <= 0.5) {
+    /* Check wall / prop collision along the flown segment */
+    if (!hit && world && world.raycast) {
+      try {
+        var seg = p.mesh.position.clone().sub(p.prev);
+        var segLen = seg.length();
+        if (segLen > 1e-6) {
+          seg.divideScalar(segLen);
+          var wall = world.raycast(p.prev, seg, segLen + 0.2);
+          if (wall && wall.point) { hit = true; hitPos = wall.point.clone(); }
+        }
+      } catch (e) {}
+    }
+
+    /* Check ground collision (safety net under every map) */
+    if (!hit && p.mesh.position.y <= 0.5) {
       hit = true;
       hitPos = p.mesh.position.clone();
       hitPos.y = 0.5;
     }
 
-    /* Check wall collision (via world raycast) */
-    if (!hit && world) {
+    /* Check enemy collision (proximity fuse) */
+    if (!hit && enemies && enemies.enemies) {
       try {
-        var down = new (p.mesh.position.constructor)(0, -1, 0);
-        var result = world.raycast ? world.raycast(p.mesh.position, down, 1) : null;
-        if (result) { hit = true; hitPos = p.mesh.position.clone(); }
-      } catch (e) {}
-    }
-
-    /* Check enemy collision */
-    if (!hit && enemies) {
-      try {
-        for (var j = 0; j < enemies.list.length; j++) {
-          var enemy = enemies.list[j];
-          if (!enemy.alive) continue;
-          if (enemy.center && p.mesh.position.distanceTo(enemy.center) < 1.0) {
+        for (var j = 0; j < enemies.enemies.length; j++) {
+          var enemy = enemies.enemies[j];
+          if (!enemy || !enemy.alive) continue;
+          if (enemy.center && p.mesh.position.distanceTo(enemy.center) < 1.2) {
             hit = true;
             hitPos = p.mesh.position.clone();
             break;
@@ -251,49 +325,57 @@ function update(dt) {
 }
 
 function explode(pos, damage, effects, scene, B, enemies, remote, g) {
-  /* Visual explosion */
+  /* Visual explosion + boom */
   if (effects) {
     if (effects.explosion) {
-      effects.explosion(pos, BLAST_RADIUS, { r: 0.9, g: 0.4, b: 0.1 });
+      effects.explosion(pos, BLAST_RADIUS, 2);
     }
     if (effects.strokeBurst) {
-      effects.strokeBurst(pos, { r: 1, g: 0.5, b: 0.1 }, 20, 8, { life: 0.5, size: 0.1 });
-      effects.strokeBurst(pos, { r: 0.5, g: 0.2, b: 0.05 }, 14, 6, { life: 0.7, size: 0.06, gravity: -2 });
+      effects.strokeBurst(pos, 3, 20, 8, { life: 0.5, size: 0.1 });
+      effects.strokeBurst(pos, 1, 14, 6, { life: 0.7, size: 0.06, gravity: -2 });
     }
   }
+  try {
+    var audio = g.ctx && g.ctx.audio;
+    if (audio && audio.explosion) audio.explosion(pos);
+  } catch (e) {}
 
-  /* Damage enemies in radius */
-  if (enemies) {
+  /* Damage enemies in radius (through the real damage pipeline, so kills,
+     hitmarkers, sounds and score all trigger correctly). */
+  if (enemies && enemies.enemies && enemies.damage) {
     try {
-      for (var i = 0; i < enemies.list.length; i++) {
-        var enemy = enemies.list[i];
-        if (!enemy.alive) continue;
-        var dist = enemy.center ? pos.distanceTo(enemy.center) : 999;
+      for (var i = 0; i < enemies.enemies.length; i++) {
+        var enemy = enemies.enemies[i];
+        if (!enemy || !enemy.alive || !enemy.center) continue;
+        var dist = pos.distanceTo(enemy.center);
         if (dist < BLAST_RADIUS) {
           var falloff = 1 - (dist / BLAST_RADIUS) * 0.5;
-          var dmg = damage * falloff;
-          if (enemy.takeDamage) {
-            enemy.takeDamage(dmg);
-          } else if (enemy.hp !== undefined) {
-            enemy.hp -= dmg;
-          }
+          var dir = enemy.center.clone().sub(pos);
+          dir.y = Math.abs(dir.y) + 0.4;
+          dir.normalize();
+          enemies.damage(enemy, damage * falloff, {
+            point: enemy.center.clone(), dir: dir,
+            part: 'torso', source: 'blast', crit: false
+          });
         }
       }
     } catch (e) {}
   }
 
-  /* Damage remote players in radius (FFA) */
-  if (remote && g.net) {
+  /* Damage remote players in radius (FFA). 'grenade' is used as the damage
+     source because it is the explosive type the netcode accepts. */
+  if (remote && g.net && g.net.sendTo) {
     try {
+      var fromArr = pos.toArray().map(function (v) { return +v.toFixed(1); });
       remote.forEach(function (rp, id) {
         if (!rp.alive) return;
         var dist = rp.center ? pos.distanceTo(rp.center) : 999;
         if (dist < BLAST_RADIUS) {
           var falloff = 1 - (dist / BLAST_RADIUS) * 0.5;
-          var dmg = damage * falloff;
-          if (g.net.sendTo) {
-            g.net.sendTo(id, 'pdmg', { amount: Math.round(dmg), from: pos.toArray(), by: g.net.id, crit: false, src: 'rocket' });
-          }
+          g.net.sendTo(id, 'pdmg', {
+            amount: Math.round(damage * falloff),
+            from: fromArr, by: g.net.id, crit: false, src: 'grenade'
+          });
         }
       });
     } catch (e) {}
@@ -315,30 +397,23 @@ function explode(pos, damage, effects, scene, B, enemies, remote, g) {
       B.body.vel.addScaledVector(pushDir, jumpPower);
       B.body.onGround = false;
 
-      /* Self-damage */
-      var maxHP = 100; /* default max HP */
-      try { maxHP = B.maxHP || 100; } catch (e) {}
+      /* Self-damage through the real pipeline (hurt FX, shake, death) */
+      var maxHP = 100;
+      try { maxHP = B.maxHp || 100; } catch (e) {}
       var selfDmg = Math.round(maxHP * getSelfDamagePct());
       if (B.takeDamage) {
         B.takeDamage(selfDmg, pos);
       } else if (B.hp !== undefined) {
         B.hp -= selfDmg;
       }
-
-      /* Screen shake */
-      try { if (g.input && g.input.rumble) g.input.rumble(0.8, 0.5, 200); } catch (e) {}
     }
   }
 }
 
-/* Reset on new match */
+/* Reset on new match (kept for compatibility; match starts are also
+   detected by watching the game state in update()). */
 window.addEventListener('dd-match-start', function () {
-  state.rockets = MAX_ROCKETS;
-  state.cooldown = 0;
-  state.projectiles.forEach(function (p) {
-    try { window.__game.ctx.scene.remove(p.mesh); } catch (e) {}
-  });
-  state.projectiles = [];
+  resetForMatch();
 });
 
 /* Expose API */

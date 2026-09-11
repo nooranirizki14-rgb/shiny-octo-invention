@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Doodle District</title>
-<link rel="stylesheet" href="style.A4A8BF44.css?v=3.0.1.80c9bb9">
-<link rel="stylesheet" href="menu-addon.css?v=3.0.1.80c9bb9">
+<link rel="stylesheet" href="style.A4A8BF44.css?v=3.0.2">
+<link rel="stylesheet" href="menu-addon.css?v=3.0.2">
 <!-- Web fonts are cosmetic: load them without blocking first paint, so a
      slow or blocked font server can never hold up the game. -->
 <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
@@ -21,16 +21,16 @@
 <script type="importmap">
 {
   "imports": {
-    "three": "./vendor/three/three.module.min.js?v=3.0.1.80c9bb9",
+    "three": "./vendor/three/three.module.min.js?v=3.0.2",
     "three/addons/": "./vendor/three/addons/"
   }
 }
 </script>
 <!-- Start fetching the 3D engine + game code immediately, in parallel with the
      rest of the page, instead of waiting until the parser reaches them. -->
-<link rel="modulepreload" href="vendor/three/three.module.min.js?v=3.0.1.80c9bb9" crossorigin>
-<link rel="modulepreload" href="game.7LCERBLR.js?v=3.0.1.80c9bb9" crossorigin>
-<link rel="preload" as="script" href="vendor/peerjs/peerjs.min.js?v=3.0.1.80c9bb9">
+<link rel="modulepreload" href="vendor/three/three.module.min.js?v=3.0.2" crossorigin>
+<link rel="modulepreload" href="game.7LCERBLR.js?v=3.0.2" crossorigin>
+<link rel="preload" as="script" href="vendor/peerjs/peerjs.min.js?v=3.0.2">
 </head>
 <body>
 <canvas id="c"></canvas>
@@ -38,13 +38,14 @@
 <noscript><div style="position:fixed;inset:0;background:#f6f3e6;color:#1a30c0;display:flex;align-items:center;justify-content:center;font-family:cursive;font-size:24px;text-align:center;padding:20px;">Doodle District needs JavaScript enabled to run.<br>Please enable JavaScript and reload.</div></noscript>
 <!-- PeerJS ships with the game: multiplayer no longer depends on a CDN
      being reachable. -->
-<script src="vendor/peerjs/peerjs.min.js?v=3.0.1.80c9bb9"></script>
+<script src="vendor/peerjs/peerjs.min.js?v=3.0.2"></script>
 <!-- ?v= busts stale cached copies of the fixed menu (tabs used to break / vanish) -->
-<script src="supabase-sync.js?v=3.0.1.80c9bb9"></script>
-<script src="menu-system.js?v=3.0.1.80c9bb9"></script>
-<script src="rocket-launcher.js?v=3.0.1.80c9bb9"></script>
-<script src="tutorial.js?v=3.0.1.80c9bb9"></script>
-<script type="module" src="game.7LCERBLR.js?v=3.0.1.80c9bb9"></script>
+<script src="supabase-sync.js?v=3.0.2"></script>
+<script src="menu-system.js?v=3.0.2"></script>
+<script src="rocket-launcher.js?v=3.0.2"></script>
+<script src="tutorial.js?v=3.0.2"></script>
+<script src="dd-fixes.js?v=3.0.2"></script>
+<script type="module" src="game.7LCERBLR.js?v=3.0.2"></script>
 <!-- Vercel Web Analytics: only requested when actually hosted on Vercel, so
      every other host stops paying for a guaranteed 404 on every page load. -->
 <script>
