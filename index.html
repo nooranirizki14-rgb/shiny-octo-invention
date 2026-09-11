@@ -6,11 +6,6 @@
 <title>Doodle District</title>
 <link rel="stylesheet" href="style.A4A8BF44.css">
 <link rel="stylesheet" href="menu-addon.css?v=3.0.1">
-<!-- Start fetching the 3D engine + game code immediately, in parallel with the
-     rest of the page, instead of waiting until the parser reaches them. -->
-<link rel="modulepreload" href="vendor/three/three.module.min.js?v=3.0.1" crossorigin>
-<link rel="modulepreload" href="game.7LCERBLR.js?v=3.0.1">
-<link rel="preload" as="script" href="vendor/peerjs/peerjs.min.js?v=3.0.1">
 <!-- Web fonts are cosmetic: load them without blocking first paint, so a
      slow or blocked font server can never hold up the game. -->
 <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
@@ -18,7 +13,11 @@
 <link rel="stylesheet" media="print" onload="this.media='all';this.onload=null"
       href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Caveat:wght@600&display=swap">
 <!-- three.js ships with the game under vendor/, so this is a plain static
-     import map: no CDN, no fallback, nothing to wait on. -->
+     import map: no CDN, no fallback, nothing to wait on.
+     MUST come before any modulepreload/module script: a module preload starts
+     import resolution, and a map registered after that point is rejected
+     ("An import map is added after module script load was triggered"), which
+     breaks every bare "three" import and stops the game booting. -->
 <script type="importmap">
 {
   "imports": {
@@ -27,6 +26,11 @@
   }
 }
 </script>
+<!-- Start fetching the 3D engine + game code immediately, in parallel with the
+     rest of the page, instead of waiting until the parser reaches them. -->
+<link rel="modulepreload" href="vendor/three/three.module.min.js?v=3.0.1" crossorigin>
+<link rel="modulepreload" href="game.7LCERBLR.js?v=3.0.1" crossorigin>
+<link rel="preload" as="script" href="vendor/peerjs/peerjs.min.js?v=3.0.1">
 </head>
 <body>
 <canvas id="c"></canvas>

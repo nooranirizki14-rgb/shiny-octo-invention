@@ -6,6 +6,7 @@
 - **The loading screen is gone completely.** No spinner, no status text, no error screens — nothing between you and the game. The page now goes straight to the main menu. The engine ships with the game, so there is nothing left to wait for
 
 ### Fixed
+- **The game actually starts now.** A stray bracket in the game bundle was a hard syntax error, so the whole game script failed to run and the page stayed empty no matter what. This was the real cause of the blank screen
 - **Loading no longer fails on most networks.** The 3D engine and the multiplayer library now ship with the game instead of being downloaded from third-party CDNs on every visit. Ad-blockers, firewalls, school/work networks and plain old offline no longer stop the game from starting — startup used to sit for 20 seconds and then always fail with "download failed"
 - **No more 20-second wait.** Startup used to stall on a fixed 20-second timer before giving up; that timer is gone entirely
 - Much less to download: the engine is now the minified build and is served gzipped — about 167 KB over the wire instead of ~1.3 MB
