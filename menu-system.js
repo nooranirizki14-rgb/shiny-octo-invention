@@ -188,12 +188,19 @@ function weaponById(slot, id) {
 
 /* ---------------- changelog data ---------------- */
 var CHANGELOG = [
-  { v: '3.0.1', date: '2026-09-10', title: 'Fix: Blank Screen on Load',
+  { v: '3.0.1', date: '2026-09-11', title: 'Doodle Balloon, Blank Screen & Startup',
     sections: {
       Fixed: [
-        'The game can no longer fail silently to a blank page: a loading screen now shows instantly, and if anything goes wrong you get a plain-language explanation instead of nothing',
-        'Loader now diagnoses the usual culprits: opening the file directly (file://), offline/blocked CDN, missing WebGL2, or an outdated browser',
-        'One-click alternate-CDN fallback (jsdelivr <-> unpkg) when the 3D engine fails to download'
+        'The game actually starts now: a stray bracket in the game code was a hard syntax error, so nothing ran at all and the page stayed empty',
+        'NEW MAP - DOODLE BALLOON replaces Doodle Bounce: a giant inflatable water park. Big balloon houses with bulging roofs, flagged towers, gateway arches, slides, palm trees and a pool ringing the whole deck',
+        'Trampolines actually bounce now - jump on a pad to get launched high. They never worked before: the pad mesh was never created, so nothing animated and nothing launched you',
+        'DOODLE BALLOON works in SOLO too: 15 enemy spawns, 6 sniper perches and 10 pickups',
+        'Multiplayer death camera now watches your killer for 3 seconds, then hands the camera back for the respawn prompt'
+      ],
+      Changed: [
+        'The 3D engine and multiplayer library now ship with the game, so it loads offline and no longer depends on a CDN being reachable',
+        'No loading screen: the game goes straight to the main menu',
+        'No emoji anywhere in the UI, only flat line icons'
       ]
     }
   },
@@ -203,7 +210,7 @@ var CHANGELOG = [
         'Tutorial: guided practice arena with a dummy — learn movement, shooting, melee swings and rocket-jumping',
         'Persistent save sync (Supabase): cloud-backed saves for profile, loadout, unlocks and stats. Configure in Settings → Cloud Sync',
         'Leaderboard (RANKS tab): global solo and multiplayer K/D rankings',
-        'New map: Doodle Bounce (replaces Skyline) — balloon houses and trampoline pads for big air',
+        'New map: Doodle Bounce (replaces Skyline) — balloon houses and trampoline pads for big air (renamed Doodle Balloon and rebuilt in 3.0.1)',
         'Rocket Launcher: press F to fire explosive rockets. Rocket-jump by firing at the ground (costs HP)',
         'New character: Boom — reduces rocket-jump self-damage to 3% and buffs explosive damage +20%',
         'Multiplayer death camera: camera follows your killer for 3 seconds before respawn',
@@ -834,7 +841,7 @@ function renderLoadout() {
             '<span class="dd-thumb" data-thumb="' + w.id + '"><span class="dd-thumb-fallback">' + w.name.charAt(0) + '</span></span>' +
             '<span class="dd-gun-meta"><b>' + w.name + (w.special ? ' <i class="dd-tag">SPECIAL</i>' : '') + '</b>' +
             '<span class="dd-minibars">' + miniBars(w) + '</span></span>' +
-            (locked ? '<span class="dd-locked">🔒 REDEEM CODE</span>' : on ? '<span class="dd-equipped">EQUIPPED</span>' : '') +
+            (locked ? '<span class="dd-locked">[X] REDEEM CODE</span>' : on ? '<span class="dd-equipped">EQUIPPED</span>' : '') +
           '</button>';
         }).join('') +
       '</div>' +
@@ -1260,14 +1267,14 @@ function renderProfile() {
     SPECIAL_EMBLEMS.map(function (e) {
       var unlocked = isEmblemUnlocked(e.id);
       var on = !p.avatar && p.specialEmblem === e.id;
-      return '<button type="button" class="dd-emb dd-emb-special' + (on ? ' on' : '') + (unlocked ? '' : ' locked') + '" data-semb="' + e.id + '" title="' + e.name + (unlocked ? '' : ' — redeem code required') + '">' + (unlocked ? e.icon : '🔒') + '</button>';
+      return '<button type="button" class="dd-emb dd-emb-special' + (on ? ' on' : '') + (unlocked ? '' : ' locked') + '" data-semb="' + e.id + '" title="' + e.name + (unlocked ? '' : ' — redeem code required') + '">' + (unlocked ? e.icon : '[X]') + '</button>';
     }).join('') + '</div>' +
     '<div class="dd-sec-label">BANNER</div>' +
     '<div class="dd-banners">' + BANNERS.map(function (bn) {
       var unlocked = isBannerUnlocked(bn);
       var lockNote = bn.req ? ('Requires Level ' + bn.req) : (bn.special ? 'Redeem code required' : '');
       return '<button type="button" class="dd-bn' + (bn.img ? ' dd-bn-img' : '') + (p.banner === bn.id ? ' on' : '') + (unlocked ? '' : ' locked') + '" data-bn="' + bn.id + '"' + (unlocked ? '' : ' data-locked="1"') + ' style="' + bannerStyle(bn) + '" title="' + bn.name + (lockNote ? ' — ' + lockNote : '') + '">' +
-        '<span style="color:' + bn.fg + '">' + bn.name + (unlocked ? '' : ' 🔒') + '</span>' +
+        '<span style="color:' + bn.fg + '">' + bn.name + (unlocked ? '' : ' [X]') + '</span>' +
         (lockNote && !unlocked ? '<i class="dd-bn-req">' + lockNote + '</i>' : '') +
       '</button>';
     }).join('') + '</div>' +

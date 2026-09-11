@@ -1,11 +1,35 @@
 # Changelog
 
-## [3.0.1] — Fix: Blank Screen on Load
+## [3.0.1] — Doodle Balloon, Blank Screen & Startup
 
-### Fixed
-- The game can no longer fail silently to a blank page: a loading screen now shows instantly, and if anything goes wrong you get a plain-language explanation instead of nothing
-- Loader now diagnoses the usual culprits: opening the file directly (`file://`), offline/blocked CDN, missing WebGL2, or an outdated browser
-- One-click alternate-CDN fallback (jsdelivr ⇄ unpkg) when the 3D engine fails to download
+### Added
+- **NEW MAP: DOODLE BALLOON** (replaces Doodle Bounce). A giant inflatable water park built to match the reference art: oversized balloon houses with bulging roofs and corner bumpers, blue towers with red cone caps and waving flags, gateway arches, run-down slides, palm trees, and a pool ringing the whole floating deck
+- **Trampolines actually bounce.** Jump on a pad and you get launched high. They never worked before — the pad mesh was never created, so nothing animated and nothing ever launched you
+
+### Fixed — maps & gameplay
+- **The old map rendered nothing.** The balloon houses crashed the level builder partway through, so the level came out completely empty — this was the "new map shows nothing"
+- **DOODLE BALLOON works in SOLO.** 15 enemy spawns, 6 sniper perches and 10 pickups, so waves have somewhere to come from
+- **Multiplayer death camera** now watches your killer for 3 seconds and then hands the camera back, instead of holding it for the whole respawn timer
+
+### Removed
+- **The loading screen is gone completely.** No spinner, no status text, no error screens — nothing between you and the game. The page now goes straight to the main menu. The engine ships with the game, so there is nothing left to wait for
+
+### Fixed — startup
+- **The game actually starts now.** A stray bracket in the game bundle was a hard syntax error, so the whole game script failed to run and the page stayed empty no matter what. This was the real cause of the blank screen
+- **Loading no longer fails on most networks.** The 3D engine and the multiplayer library now ship with the game instead of being downloaded from third-party CDNs on every visit. Ad-blockers, firewalls, school/work networks and plain old offline no longer stop the game from starting — startup used to sit for 20 seconds and then always fail with "download failed"
+- **No more 20-second wait.** Startup used to stall on a fixed 20-second timer before giving up; that timer is gone entirely
+- Much less to download: the engine is now the minified build and is served gzipped — about 167 KB over the wire instead of ~1.3 MB
+- Reloading is near-instant: bundled libraries are cached by the browser for 30 days instead of being re-fetched every time
+- Web fonts no longer hold up the game — they load in the background, so a slow or blocked font server can't stall startup
+- Stopped requesting the Vercel Analytics script on hosts that aren't Vercel, where it was a guaranteed 404 on every single page load
+
+### Changed
+- The game can now be played fully offline
+- **No emoji anywhere in the UI** — the lock emoji is gone and the remaining symbols (stars, emblems, arrows) are forced to render as flat line icons in the page's ink colour, never as colour emoji
+
+### Already in place (verified, not re-built)
+- **Tutorial**, **Supabase save sync**, **RANKS leaderboard**, **Doodle Harbor rebuild**, **Doodle Skyline replaced by Doodle Bounce**, **Rocket Launcher** (F key, 7% self-damage) and the **Boom character** (3% self-damage, +20% explosive) all already existed and were checked working rather than rewritten
+- Version numbering is already clean and sequential (1.0.0 → 3.0.1) and matches between the in-game changelog and this file
 
 ## [3.0.0] — Final Big Update
 

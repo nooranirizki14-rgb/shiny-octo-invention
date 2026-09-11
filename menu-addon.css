@@ -1,5 +1,14 @@
 /* Doodle District v0.2.1 — menu addon styles (all classes prefixed dd-) */
 #dd-root { font-family: 'Patrick Hand', 'Caveat', cursive; }
+/* No emoji anywhere in the UI: the few symbol glyphs we use (stars, emblems,
+   arrows) must render as flat line icons in the page's ink colour, never as
+   the OS's colour emoji. 'text' presentation + a text-only font stack force
+   that on every platform. */
+#dd-root, #dd-root * { font-variant-emoji: text; }
+#dd-root .dd-icon, #dd-root .dd-emb, #dd-root [class*="icon"] {
+  font-family: 'Patrick Hand', 'Segoe UI Symbol', 'DejaVu Sans', sans-serif;
+  font-variant-emoji: text;
+}
 
 /* push the game menu down while our tab bar is up so they never overlap.
    --dd-tabs-h is measured live by menu-system.js (the bar wraps on small screens) */
