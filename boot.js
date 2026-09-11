@@ -2,17 +2,21 @@
    Doodle District — Boot loader & error overlay v3.0.1
    - Shows a loading screen the instant the page starts parsing,
      so a failure can NEVER look like a blank page again.
+   - Runs its environment checks IMMEDIATELY (not after a timeout),
+     and fails fast the moment the engine reports an error, so a
+     broken boot takes ~a second to explain itself instead of 20s.
    - Detects the common "game shows nothing" causes and explains
      them in plain language:
        * page opened directly as a file (file://) — modules blocked
        * browser too old for import maps
        * WebGL2 unavailable / blocked
-       * CDN unreachable (offline, ad-blocker, firewall)
+       * engine files unreachable (offline, ad-blocker, firewall)
        * any uncaught error while the game boots
    - Watchdogs the game module: the game sets window.__DD_gameBooted
      as its very last step; if that flag never appears, this overlay
      switches from "loading" to a diagnosis + [RETRY] button, plus a
-     one-click alternate-CDN fallback (jsdelivr <-> unpkg).
+     one-click switch between the bundled copy of the 3D engine and
+     the jsdelivr / unpkg CDNs.
    Classic script, zero dependencies, runs before everything else.
    ============================================================ */
 (function () {
@@ -21,17 +25,27 @@
 /* Keep in sync with the inline import-map injector in index.html */
 var CDN_KEY = 'dd_cdn';
 var BOOT_FLAG = '__DD_gameBooted';
-var WATCHDOG_MS = 20000;
+/* The engine now ships with the game, so a healthy boot is fast. Give a slow
+   phone room to compile+start, but nothing like the old 20s dead wait — and
+   note that real failures are reported immediately, not at this deadline. */
+var WATCHDOG_MS = 9000;
+var SOURCES = ['local', 'jsdelivr', 'unpkg'];
+var SOURCE_LABELS = { local: 'bundled copy', jsdelivr: 'jsDelivr CDN', unpkg: 'unpkg CDN' };
 var errors = [];
 
 function getCdn() {
-  try { return localStorage.getItem(CDN_KEY) === 'unpkg' ? 'unpkg' : 'jsdelivr'; }
-  catch (e) { return 'jsdelivr'; }
+  try {
+    var v = localStorage.getItem(CDN_KEY);
+    return SOURCES.indexOf(v) !== -1 ? v : 'local';
+  } catch (e) { return 'local'; }
 }
 function setCdn(name) {
-  try { localStorage.setItem(CDN_KEY, name); } catch (e) {}
+  try { localStorage.setItem(CDN_KEY, SOURCES.indexOf(name) !== -1 ? name : 'local'); } catch (e) {}
 }
-function otherCdn() { return getCdn() === 'unpkg' ? 'jsdelivr' : 'unpkg'; }
+/* Next source to offer: always steer a failing boot back to the bundled copy
+   first, since that one cannot be blocked by a network or an ad-blocker. */
+function otherCdn() { return getCdn() === 'local' ? 'jsdelivr' : 'local'; }
+function sourceLabel(name) { return SOURCE_LABELS[name] || name; }
 
 /* ---------------- error capture (starts immediately) ---------------- */
 function note(source, message) {
@@ -45,6 +59,23 @@ function note(source, message) {
     }
     errors.push({ source: source, message: message, at: new Date().toISOString() });
     if (errors.length > 12) errors.shift();
+    /* Don't sit on a known-fatal error until the watchdog deadline: if the
+       engine or the game module failed to load, say so right away. */
+    scheduleFailFast();
+  } catch (e) {}
+}
+
+/* Report a hard failure almost immediately, but on a short delay so several
+   related errors (three.js + the game module) can be collected first. */
+var failFastTimer = null;
+function scheduleFailFast() {
+  if (finished || failFastTimer) return;
+  try {
+    failFastTimer = setTimeout(function () {
+      failFastTimer = null;
+      if (finished || booted()) return;
+      if (engineFailed()) watchdog();
+    }, 250);
   } catch (e) {}
 }
 
@@ -160,7 +191,7 @@ function diagnosticsText() {
   lines.push('time: ' + new Date().toISOString());
   try { lines.push('url: ' + location.href); } catch (e) {}
   try { lines.push('protocol: ' + location.protocol); } catch (e) {}
-  lines.push('cdn: ' + getCdn());
+  lines.push('engine source: ' + getCdn() + ' (' + sourceLabel(getCdn()) + ')');
   try { lines.push('ua: ' + navigator.userAgent); } catch (e) {}
   lines.push('importmap: ' + (importMapSupported() ? 'yes' : 'NO'));
   lines.push('webgl2: ' + (webgl2Available() ? 'yes' : 'NO'));
@@ -188,7 +219,7 @@ function showError(title, html) {
         '<div class="dd-boot-err">' + html + '</div>' +
         '<div class="dd-boot-row">' +
           '<button type="button" id="dd-boot-retry">↻ RETRY</button>' +
-          '<button type="button" class="alt" id="dd-boot-cdn">TRY OTHER CDN (' + esc(otherCdn().toUpperCase()) + ')</button>' +
+          '<button type="button" class="alt" id="dd-boot-cdn">USE ' + esc(sourceLabel(otherCdn()).toUpperCase()) + '</button>' +
         '</div>' +
         '<details><summary>technical details (for bug reports)</summary><pre id="dd-boot-diag">' +
         esc(diagnosticsText()) + '</pre></details>';
@@ -234,6 +265,16 @@ function engineFailed() {
   return false;
 }
 
+/* Checks that are true or false the instant the page loads — there is no point
+   making anyone stare at a spinner for these. Returns true if it showed one. */
+function preflight() {
+  if (isFileProtocol() || !importMapSupported() || !webgl2Available()) {
+    watchdog();
+    return true;
+  }
+  return false;
+}
+
 function watchdog() {
   if (booted()) { finish(); return; }
   if (isFileProtocol()) {
@@ -256,15 +297,21 @@ function watchdog() {
     return;
   }
   if (engineFailed()) {
-    showError('download failed', '<b>The game engine failed to download</b> (3D library from the <b>' + esc(getCdn()) + '</b> CDN). ' +
-      'This usually means you are <b>offline</b>, or an ad-blocker / firewall / school network is blocking it. ' +
-      'Check your connection and ad-blocker, then retry — or try the other CDN with one click below.');
+    var src = getCdn();
+    showError('could not load the engine',
+      '<b>The 3D engine failed to load</b> (currently using the <b>' + esc(sourceLabel(src)) + '</b>).' +
+      (src === 'local'
+        ? '<br><br>The engine ships with the game, so this usually means a file is missing from the ' +
+          'upload, or the server is not serving <code>vendor/</code>. Hit <b>RETRY</b>, or fall back to a CDN below.'
+        : '<br><br>You are loading it from a CDN, which can be blocked by an ad-blocker, firewall or ' +
+          'school network — and fails entirely when you are offline. Switch back to the <b>bundled copy</b> ' +
+          'below: it needs no internet at all.'));
     return;
   }
   showError('taking too long…', '<b>The game did not finish loading.</b> ' +
-    'If you are online, something blocked one of its files (ad-blocker, firewall, or a hiccup at the CDN). ' +
-    'Hit <b>RETRY</b>, or try the other CDN below. ' +
-    (typeof window.Peer !== 'function' ? '<br><br>Note: the multiplayer library also failed to load, which points at a blocked CDN.' : ''));
+    'Something blocked one of its files, or your device is still working through the 3D engine. ' +
+    'Hit <b>RETRY</b>, or switch the engine source below. ' +
+    (typeof window.Peer !== 'function' ? '<br><br>Note: the multiplayer library also failed to load, which points at a missing or blocked file.' : ''));
 }
 
 /* status flavor while waiting */
@@ -287,8 +334,11 @@ function startStatusRotation() {
 
 function boot() {
   buildOverlay();
-  startStatusRotation();
   try { window.addEventListener('dd-game-booted', finish); } catch (e) {}
+  /* Fatal environment problems are known right now — report them instantly
+     instead of pretending to load for the full watchdog period. */
+  if (preflight()) return;
+  startStatusRotation();
   var poll = setInterval(function () {
     try { if (booted()) { clearInterval(poll); if (statusTimer) clearInterval(statusTimer); finish(); } }
     catch (e) {}
@@ -301,13 +351,27 @@ function boot() {
   }, WATCHDOG_MS);
 }
 
+/* Paint the loading screen NOW. We run in <head>, so <body> does not exist
+   yet — but <html> does, and appending there renders immediately. Waiting for
+   DOMContentLoaded meant waiting on every blocking script in <body> first,
+   which is exactly the "nothing happens for ages" everyone complained about.
+   Once <body> exists we move the overlay into it so it sits above the game. */
+buildOverlay();
+function reparentOverlay() {
+  try {
+    if (overlay && document.body && overlay.parentNode !== document.body) {
+      document.body.appendChild(overlay);
+    }
+  } catch (e) {}
+}
+
 if (document.readyState === 'loading') {
-  /* body may not exist yet (we run in <head>); wait for it before touching DOM */
   document.addEventListener('DOMContentLoaded', function () {
-    /* fast-fail checks can already render once DOM is ready */
+    reparentOverlay();
     boot();
   });
 } else {
+  reparentOverlay();
   boot();
 }
 
@@ -317,7 +381,9 @@ window.__DDboot = {
   errors: errors,
   diagnostics: diagnosticsText,
   retry: function () { location.reload(); },
-  useCdn: function (name) { setCdn(name === 'unpkg' ? 'unpkg' : 'jsdelivr'); location.reload(); }
+  /* 'local' (bundled, default), 'jsdelivr' or 'unpkg' */
+  source: getCdn,
+  useCdn: function (name) { setCdn(name); location.reload(); }
 };
 
 })();

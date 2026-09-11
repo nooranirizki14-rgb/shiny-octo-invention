@@ -4,31 +4,49 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Doodle District</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Caveat:wght@600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.A4A8BF44.css">
 <link rel="stylesheet" href="menu-addon.css?v=3.0.1">
+<!-- Start fetching the 3D engine + game code immediately, in parallel with the
+     rest of the page, instead of waiting until the parser reaches them. -->
+<link rel="modulepreload" href="vendor/three/three.module.min.js?v=3.0.1" crossorigin>
+<link rel="modulepreload" href="game.7LCERBLR.js?v=3.0.1">
+<link rel="preload" as="script" href="vendor/peerjs/peerjs.min.js?v=3.0.1">
+<!-- Web fonts are cosmetic: load them without blocking first paint, and never
+     let a slow/blocked font server hold the loading screen hostage. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" media="print" onload="this.media='all';this.onload=null"
+      href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Caveat:wght@600&display=swap">
 <!-- Boot loader: loading screen + plain-language error overlay, so a failed
      boot can never look like a blank page again. Must run first. -->
 <script src="boot.js?v=3.0.1"></script>
 <!-- Import map for three.js. Injected by script (instead of a static tag) so
-     the boot overlay can offer a one-click alternate-CDN fallback: the choice
-     is stored in localStorage 'dd_cdn' ('jsdelivr' default, 'unpkg' alt).
-     This runs synchronously in <head>, before any module loads. -->
+     the boot overlay can switch sources with one click. The choice lives in
+     localStorage 'dd_cdn': 'local' (default, files shipped with the game),
+     'jsdelivr' or 'unpkg'. Local means the game loads offline and never waits
+     on a third-party CDN. Runs synchronously in <head>, before any module. -->
 <script>
 (function () {
+  var SOURCES = {
+    local: 'vendor/three/',
+    jsdelivr: 'https://cdn.jsdelivr.net/npm/three@0.170.0/',
+    unpkg: 'https://unpkg.com/three@0.170.0/'
+  };
   try {
-    var choice = 'jsdelivr';
-    try { if (localStorage.getItem('dd_cdn') === 'unpkg') choice = 'unpkg'; } catch (e) {}
-    var base = choice === 'unpkg'
-      ? 'https://unpkg.com/three@0.170.0/'
-      : 'https://cdn.jsdelivr.net/npm/three@0.170.0/';
+    var choice = 'local';
+    try {
+      var saved = localStorage.getItem('dd_cdn');
+      if (saved && SOURCES[saved]) choice = saved;
+    } catch (e) {}
+    var base = SOURCES[choice];
+    var imports = choice === 'local'
+      ? { 'three': base + 'three.module.min.js?v=3.0.1',
+          'three/addons/': base + 'addons/' }
+      : { 'three': base + 'build/three.module.js',
+          'three/addons/': base + 'examples/jsm/' };
     var el = document.createElement('script');
     el.type = 'importmap';
-    el.textContent = JSON.stringify({ imports: {
-      'three': base + 'build/three.module.js',
-      'three/addons/': base + 'examples/jsm/'
-    } });
+    el.textContent = JSON.stringify({ imports: imports });
     document.head.appendChild(el);
   } catch (e) { /* boot.js watchdog will explain what went wrong */ }
 })();
@@ -38,15 +56,25 @@
 <canvas id="c"></canvas>
 <div id="hud"></div>
 <noscript><div style="position:fixed;inset:0;background:#f6f3e6;color:#1a30c0;display:flex;align-items:center;justify-content:center;font-family:cursive;font-size:24px;text-align:center;padding:20px;">Doodle District needs JavaScript enabled to run.<br>Please enable JavaScript and reload.</div></noscript>
-<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<!-- PeerJS ships with the game: multiplayer no longer depends on a CDN being
+     reachable, and it never delays the loading screen. -->
+<script src="vendor/peerjs/peerjs.min.js?v=3.0.1"></script>
 <!-- ?v= busts stale cached copies of the fixed menu (tabs used to break / vanish) -->
 <script src="supabase-sync.js?v=3.0.1"></script>
 <script src="menu-system.js?v=3.0.1"></script>
 <script src="rocket-launcher.js?v=3.0.1"></script>
 <script src="tutorial.js?v=3.0.1"></script>
 <script type="module" src="game.7LCERBLR.js?v=3.0.1"></script>
-<!-- Vercel Web Analytics: collects page views once Analytics is enabled on the project; harmless elsewhere -->
-<script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
-<script defer src="_vercel/insights/script.js.br"></script>
+<!-- Vercel Web Analytics: only requested when actually hosted on Vercel, so
+     every other host stops paying for a guaranteed 404 on every page load. -->
+<script>
+window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+if (/\.vercel\.app$/.test(location.hostname)) {
+  var vs = document.createElement('script');
+  vs.defer = true;
+  vs.src = '_vercel/insights/script.js.br';
+  document.body.appendChild(vs);
+}
+</script>
 </body>
 </html>
