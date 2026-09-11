@@ -1,10 +1,14 @@
 # Changelog
 
-## [3.0.1] — Fix: Blank Screen, Doodle Bounce & Startup
+## [3.0.1] — Doodle Balloon, Blank Screen & Startup
+
+### Added
+- **NEW MAP: DOODLE BALLOON** (replaces Doodle Bounce). A giant inflatable water park built to match the reference art: oversized balloon houses with bulging roofs and corner bumpers, blue towers with red cone caps and waving flags, gateway arches, run-down slides, palm trees, and a pool ringing the whole floating deck
+- **Trampolines actually bounce.** Jump on a pad and you get launched high. They never worked before — the pad mesh was never created, so nothing animated and nothing ever launched you
 
 ### Fixed — maps & gameplay
-- **DOODLE BOUNCE now renders.** The balloon houses crashed the level builder partway through, so the map came out completely empty — this was the "new map shows nothing". Balloon houses, trampolines and big air all work now
-- **DOODLE BOUNCE now works in SOLO.** It had no enemy spawn points, sniper perches or pickups, so waves had nowhere to spawn from. Added 15 spawns, 6 sniper perches and 10 pickup points
+- **The old map rendered nothing.** The balloon houses crashed the level builder partway through, so the level came out completely empty — this was the "new map shows nothing"
+- **DOODLE BALLOON works in SOLO.** 15 enemy spawns, 6 sniper perches and 10 pickups, so waves have somewhere to come from
 - **Multiplayer death camera** now watches your killer for 3 seconds and then hands the camera back, instead of holding it for the whole respawn timer
 
 ### Removed
