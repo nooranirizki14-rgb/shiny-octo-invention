@@ -204,7 +204,8 @@ var CHANGELOG = [
       'Client weather: day / dusk / night / rain / snow overlays',
       'GG emote (H): hop + chalk stamp · daily/weekly challenges with XP',
       'FIXED: FFA rocket kills now credit properly (pdead validator)',
-      'Phase 2: KOTH / INFECTED / JUGGERNAUT, sketch-wall (B), hats, DUAL DOODLES rifle'
+      'Phase 2: KOTH / INFECTED / JUGGERNAUT, sketch-wall (B), hats, DUAL DOODLES rifle',
+      'Phase 3: SCHOOL + PARKOUR maps, SPAR bots, drawbridge trap, RC buddy, sky plane'
     ] },
   { v: '3.1.0', date: '2026-09-11', title: 'New Maps, Slot-5 Bazooka & Laser Sights',
     sections: {
@@ -1596,6 +1597,12 @@ function renderParty() {
     return '<button class="dd-choice' + (curHat === h.id ? ' on' : '') + '" data-hat="' + h.id + '"' +
       (h.locked ? ' disabled' : '') + '>' + escapeHtml(h.label) + (h.locked ? ' \uD83D\uDD12' : '') + '</button>';
   }).join('') : '<span class="dd-note">Hats loading&hellip;</span>';
+  var sparN = store.get('doodle_sparbots', 0) | 0;
+  var sparBtns = [0, 2, 4, 6].map(function (n) {
+    return '<button class="dd-choice' + (sparN === n ? ' on' : '') + '" data-spar="' + n + '">' + (n === 0 ? 'OFF' : n + ' BOTS') + '</button>';
+  }).join('');
+  var rcOn = store.get('doodle_rcbuddy', null);
+  if (rcOn == null) rcOn = true;
   var html = '<h1>PARTY</h1><div class="dd-party">' +
     '<h2>MATCH MODE (online)</h2><div class="dd-row">' +
     mbtn('ffa', 'FFA', true) +
@@ -1614,12 +1621,17 @@ function renderParty() {
     '<button class="dd-toggle' + (skins ? ' on' : '') + '" data-skins="1"><span class="dd-dot"></span>INK LASERS + ACCENTS</button>' +
     '</div><div class="dd-note">Lasers and grip stripes follow each gun&apos;s ink color.</div>' +
     '<h2>HAT (seen by others online)</h2><div class="dd-row">' + hatBtns + '</div>' +
+    '<h2>SPAR BOTS (solo)</h2><div class="dd-row">' + sparBtns + '</div>' +
+    '<div class="dd-note">Named rifle bots hunt you instead of waves. FFA has no enemies, so this is solo-only.</div>' +
+    '<h2>RC BUDDY</h2><div class="dd-row">' +
+    '<button class="dd-toggle' + (rcOn ? ' on' : '') + '" data-rc="1"><span class="dd-dot"></span>RC BUDDY FOLLOWS YOU</button>' +
+    '</div>' +
     '<h2>CHALLENGES</h2>' +
     chal.daily.map(function (c) { return chalRow(c, 'DAILY'); }).join('') +
     chalRow(chal.weekly, 'WEEKLY') +
     '<h2>FIELD MANUAL</h2><div class="dd-note">' +
     'G grenade (hold to cook) &middot; Q / E grapple &middot; F rocket &middot; L laser sights &middot; H GG emote<br>' +
-    '1&ndash;5 / wheel weapons &middot; R reload &middot; V melee &middot; X dash &middot; B sketch-wall &middot; host picks modes in PARTY' +
+    '1&ndash;5 / wheel weapons &middot; R reload &middot; V melee &middot; X dash &middot; B sketch-wall &middot; host picks modes in PARTY<br>PARK: race the clock &middot; SCHOOL: bell tolls your streaks' +
     '</div></div>';
   panelEl.innerHTML = html;
   function each(sel, fn) {
@@ -1641,6 +1653,15 @@ function renderParty() {
   });
   each('[data-hat]', function (b) {
     b.addEventListener('click', function () { if (hatLib) hatLib.set(b.getAttribute('data-hat')); renderParty(); });
+  });
+  each('[data-spar]', function (b) {
+    b.addEventListener('click', function () { store.set('doodle_sparbots', parseInt(b.getAttribute('data-spar'), 10) || 0); renderParty(); });
+  });
+  var rc = panelEl.querySelector('[data-rc]');
+  if (rc) rc.addEventListener('click', function () {
+    var cur = store.get('doodle_rcbuddy', null);
+    store.set('doodle_rcbuddy', cur == null ? false : !cur);
+    renderParty();
   });
   var sk = panelEl.querySelector('[data-skins]');
   if (sk) sk.addEventListener('click', function () { P.setInkSkins(!P.isInkSkins()); renderParty(); });

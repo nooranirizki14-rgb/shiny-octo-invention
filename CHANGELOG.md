@@ -31,6 +31,16 @@
 - **DUAL DOODLES rifle**: 0.05s-interval twin hose with mirrored in-match + loadout-preview models (new `dual` loadout-stat flag)
 - Mode wins count toward the wins challenge; new sketch-wall challenge; engine per-client `__ddSpeedMul` / `__ddDmgMul` buff flags
 
+### Added — maps, bots & world bits (Phase 3)
+- **DOODLE SCHOOL**: indoor CQB — entrance hall, 4 classrooms with desks, corridors, gym with bleachers + hoops, cafeteria, yard, flag pole and a bell tower. 12 spawns / 5 snipers / 8 pickups / 14 arena
+- **DOODLE PARKOUR**: floating obstacle course over the void — 5 checkpoint rings, beams, towers, finish gate. Live timer HUD, per-checkpoint respawns + full heals, best-time records, +100 XP per finish, pacifist (no waves)
+- **SPAR BOTS (solo)**: 0/2/4/6 named rifle bots (BOB, WALLY, ZED…) with floating nametags replace waves — new `sparbot` enemy kind, killfeed integration, streaks + challenges count bot kills
+- **Castle portcullis trap**: pressure plate on the drawbridge slams the gate shut for 6s (real collider swap) — works on rivals too
+- **RC BUDDY**: a tiny red car that follows you, hops and beeps when you score (toggleable)
+- **Skywriter plane**: a doodle plane buzzes overhead every time you call an airstrike (5 streak)
+- **School bell**: tolls once per streak level on school map (×2, ×3…)
+- Map sources now committed under `maps/` (castle/school/park) so they survive `/tmp` wipes
+
 ### Fixed
 - **FFA rocket kills now credit properly.** The `pdead` net validator's `how` allow-list was missing `rocket`, so rocket kills were rejected (no credit, and a violation strike against the victim). One-token bundle fix, `.mjs`-gated
 - `dd-match-start` / `dd-match-end` are now actually dispatched (match watcher), which also repairs the rocket HUD's match reset listener
