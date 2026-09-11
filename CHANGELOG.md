@@ -31,6 +31,8 @@
 ### Fixed — maps & stability
 - **A failing map builder can no longer strand you in an empty world**: level loads (and the very first boot level) fall back to DOODLE DISTRICT with a notice instead of a blank scene
 - **One broken level animation can no longer freeze the whole game**: level-animated hooks run guarded and a failing one is disabled with a console warning
+- **Frame safety net**: every per-frame system (player, enemies, remote players, props, effects, HUD, audio, menu camera) is guarded, so a single hitch can no longer stop rendering and black-screen a match — failures surface as a small on-screen note (and in `window.__ddFixes.errors`) instead of silence
+- **Render watchdog**: if drawing stalls for 3s mid-match, the current map reloads automatically (with a notice); it backs off instead of looping forever
 - **Tutorial teaches the real keys**: SPACE jumps, V swings, F rockets (was: SPACE swung, nothing jumped)
 
 ## [3.0.1] — Doodle Balloon, Blank Screen & Startup

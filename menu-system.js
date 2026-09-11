@@ -201,6 +201,8 @@ var CHANGELOG = [
         'Joining with a code now also finds lobbies hosted from localhost / LAN / dev builds and vice versa',
         'Hosting retries once when matchmaking is slow, and online failures show a concrete next step',
         'A glitching map can no longer leave you staring at an empty world — the game falls back to DOODLE DISTRICT, and one broken level animation can no longer freeze the game',
+        'Frame safety net: every per-frame system (player, enemies, remote players, props, effects, HUD, audio) is guarded so one hitch can no longer black-screen a match — failures show as a small on-screen note instead',
+        'Render watchdog: if drawing stalls mid-match, the current map reloads automatically',
         'Tutorial teaches the real keys: SPACE jumps, V swings, F rockets'
       ],
       Changed: [

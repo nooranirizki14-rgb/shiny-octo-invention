@@ -347,3 +347,18 @@ body.dd-tabs-on #hud .screen { overflow-y: auto; }
 @media (pointer: coarse) {
   #dd-rocket-btn { display: block; }
 }
+
+/* ---- error toasts (dd-fixes): failures stay visible, never silent ---- */
+#dd-errbox {
+  position: fixed; left: 12px; top: 64px; z-index: 99990;
+  display: flex; flex-direction: column; gap: 6px;
+  max-width: min(420px, 80vw); pointer-events: none;
+  font-family: 'Patrick Hand', cursive; font-size: 14px;
+}
+#dd-errbox .dd-err {
+  background: rgba(250,248,238,.95); color: #d02030;
+  border: 2px solid #d02030; border-radius: 8px;
+  padding: 6px 10px; box-shadow: 0 2px 10px rgba(0,0,0,.2);
+  transition: opacity .4s;
+}
+#dd-errbox .dd-err.out { opacity: 0; }

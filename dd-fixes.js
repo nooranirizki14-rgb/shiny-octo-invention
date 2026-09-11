@@ -54,6 +54,7 @@ function boot() {
   try { patchSaber(); } catch (e) { log('saber failed', e); }
   try { patchAnimatedGuard(); } catch (e) { log('animated-guard failed', e); }
   try { patchNet(); } catch (e) { log('net failed', e); }
+  try { patchFrameSafety(); } catch (e) { log('frame-safety failed', e); }
   log('all patches applied');
 }
 
@@ -391,6 +392,168 @@ function patchNet() {
     }
   });
   log('net hardening on');
+}
+
+/* ---------------- 8. FRAME SAFETY NET ----------------
+   The engine's frame loop stops drawing the moment any per-frame update
+   throws (the render call sits at the end). That single fact is behind
+   most "black / empty world in matches" reports: one hiccup in enemies,
+   remotes, props, effects, audio or the player — and the screen goes
+   black while the game keeps running blind underneath.
+   This patch: (a) guards every per-frame update reachable from the game
+   API, (b) shows a small on-screen error toast so failures are visible
+   instead of silent, (c) watches the render heartbeat and reloads the
+   current map automatically if drawing stalls mid-match. */
+var errorLog = [];
+try { window.__ddFixes = window.__ddFixes || {}; window.__ddFixes.errors = errorLog; } catch (e) {}
+
+function ensureToastBox() {
+  var box = document.getElementById('dd-errbox');
+  if (box) return box;
+  try {
+    box = document.createElement('div');
+    box.id = 'dd-errbox';
+    document.body.appendChild(box);
+  } catch (e) { return null; }
+  return box;
+}
+
+var lastToastAt = 0;
+function reportError(source, err) {
+  var msg = String((err && err.message) || err || 'unknown error');
+  try { errorLog.push({ t: Date.now(), src: source, msg: msg }); } catch (e) {}
+  try { console.warn(PATCH_TAG, source + ':', err); } catch (e) {}
+  /* one toast every few seconds max — a per-frame throw must not spam */
+  var now = Date.now();
+  if (now - lastToastAt < 4000) return;
+  lastToastAt = now;
+  try {
+    var box = ensureToastBox();
+    if (!box) return;
+    var d = document.createElement('div');
+    d.className = 'dd-err';
+    d.textContent = 'hitch in ' + source + ': ' + msg.slice(0, 140);
+    box.appendChild(d);
+    while (box.children.length > 3) box.removeChild(box.firstChild);
+    setTimeout(function () {
+      d.classList.add('out');
+      setTimeout(function () { try { d.remove(); } catch (e) {} }, 500);
+    }, 6000);
+  } catch (e) {}
+}
+
+function guardUpdate(obj, method, source) {
+  try {
+    if (!obj || typeof obj[method] !== 'function') return false;
+    var fn = obj[method];
+    if (fn.__ddGuarded) return true;
+    var bound = fn.bind ? fn.bind(obj) : function () { return fn.apply(obj, arguments); };
+    obj[method] = function () {
+      try {
+        return bound.apply(null, arguments);
+      } catch (e) {
+        reportError(source, e);
+        return undefined;
+      }
+    };
+    obj[method].__ddGuarded = true;
+    return true;
+  } catch (e) { return false; }
+}
+
+function patchFrameSafety() {
+  var g = window.__game;
+
+  /* surface global failures instead of failing silently */
+  try {
+    window.addEventListener('error', function (ev) {
+      if (ev && ev.message) reportError('window', ev.message);
+    });
+    window.addEventListener('unhandledrejection', function (ev) {
+      if (ev && ev.reason) reportError('promise', ev.reason);
+    });
+  } catch (e) {}
+
+  /* guard the per-frame updates the engine runs before drawing */
+  try {
+    if (g.player) {
+      guardUpdate(g.player, 'update', 'player');
+      guardUpdate(g.player, 'idleCam', 'menu camera');
+    }
+    if (g.enemies) guardUpdate(g.enemies, 'update', 'enemies');
+    if (g.props) guardUpdate(g.props, 'update', 'props');
+    if (g.effects) guardUpdate(g.effects, 'update', 'effects');
+    if (g.hud) guardUpdate(g.hud, 'update', 'hud');
+    if (g.input) guardUpdate(g.input, 'update', 'input');
+    if (g.ctx && g.ctx.audio) {
+      guardUpdate(g.ctx.audio, 'setListener', 'audio');
+      guardUpdate(g.ctx.audio, 'setIntensity', 'audio');
+    }
+  } catch (e) {}
+
+  /* remote players arrive later; guard each one's update as it appears */
+  function guardRemotes() {
+    try {
+      var remotes = g.remote;
+      if (!remotes || !remotes.forEach) return;
+      remotes.forEach(function (rp) {
+        guardUpdate(rp, 'update', 'remote player');
+      });
+    } catch (e) {}
+  }
+  guardRemotes();
+  setInterval(guardRemotes, 1000);
+
+  /* render heartbeat + stall recovery */
+  try {
+    var renderer = g.ctx && g.ctx.renderer;
+    var lastRender = performance.now();
+    var renderThrows = 0;
+    if (renderer && typeof renderer.render === 'function' && !renderer.render.__ddGuarded) {
+      var origRender = renderer.render.bind(renderer);
+      renderer.render = function () {
+        try {
+          var r = origRender.apply(null, arguments);
+          lastRender = performance.now();
+          renderThrows = 0;
+          return r;
+        } catch (e) {
+          renderThrows++;
+          if (renderThrows <= 2) reportError('renderer', e);
+          return undefined;
+        }
+      };
+      renderer.render.__ddGuarded = true;
+    }
+    var recoveries = 0, lastRecovery = 0;
+    var bootGrace = performance.now() + 8000;
+    setInterval(function () {
+      try {
+        if (performance.now() < bootGrace) return;
+        if (document.hidden) return;
+        var st = g.game && g.game.state;
+        if (st !== 'play' && st !== 'dying') { lastRender = performance.now(); return; }
+        if (performance.now() - lastRender < 3000) return;
+        /* drawing stalled mid-match — reload the current map once */
+        if (recoveries >= 2 && performance.now() - lastRecovery < 60000) return;
+        recoveries++;
+        lastRecovery = performance.now();
+        lastRender = performance.now();
+        var key = (g.level && g.level.key) || 'district';
+        var arena = !!(g.game && g.game.mode === 'ffa');
+        reportError('watchdog', 'drawing stalled — reloading ' + key);
+        try {
+          if (typeof g.setLevel === 'function') g.setLevel(key, arena, true);
+        } catch (e2) {
+          try {
+            if (typeof g.setLevel === 'function') g.setLevel('district', arena, true);
+          } catch (e3) {}
+        }
+      } catch (e) {}
+    }, 1000);
+  } catch (e) {}
+
+  log('frame safety on');
 }
 
 /* go */
