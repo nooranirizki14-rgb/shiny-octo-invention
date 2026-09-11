@@ -5,7 +5,7 @@
      re-render of the menu and stay up on all menu screens (only hidden
      while a match is actually being played)
    - Solo setup: mode (Survival / Blitz / Juggernaut) + difficulty (Easy/Med/Hard)
-   - Loadout: 40 weapons (10 rifle / 10 shotgun / 10 sniper / 10 blade) with 3D preview
+   - Loadout: 51 weapons (12 rifle / 12 shotgun / 12 sniper / 12 blade / 3 rocket) with 3D preview
    - Profile: banner, emblem, level + XP earned from matches
    - Data-driven changelog, settings, credits, mobile support
    ============================================================ */
@@ -15,7 +15,7 @@
 /* Unlock the game's exposed API (game.js only exposes helpers when this exists) */
 window.__game = window.__game || {};
 
-var VERSION = '3.0.2';
+var VERSION = '3.1.0';
 var $ = function (s, r) { return (r || document).querySelector(s); };
 var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
 
@@ -161,12 +161,16 @@ katana: [
  { id: 'katana_lightsaber', name: 'LIGHTSABER', hint: 'secret · an elegant weapon, for a more civilized doodle', desc: 'From a galaxy of margin doodles far, far away. A humming blade of pure light. Easter-egg weapon, redeem-only.', ink: 0, scale: 1.1, bars: [100, 90, 100, 20], special: true, saber: true,
    stats: { damage: 110, slashDur: 0.22 } }
 ],
-explosive: [
- { id: 'explosive_rocket', name: 'ROCKET LAUNCHER', hint: 'press F · AoE explosion + rocket jump', desc: 'A doodle rocket launcher. Fire at enemies for explosive AoE damage, or fire at your feet to rocket-jump. Costs HP to jump.', ink: 1, scale: 1, bars: [80, 20, 30, 50],
-   stats: { damage: 80, blastRadius: 6, rockets: 3, selfDamagePct: 0.07, cooldown: 2.0 } }
+rocket: [
+ { id: 'rocket_classic', name: 'DOODLE BAZOOKA', hint: 'slot 5 · big boom + rocket jump', desc: 'The classic shoulder-fired eraser. One fat rocket, one huge boom. Fire at your feet to fly.', ink: 3, scale: 1, bars: [85, 25, 35, 60],
+   stats: { magSize: 1, reserve: 4, maxReserve: 6, interval: 1.2, damage: 80, headMul: 1, pellets: 1, spread: 0.004, adsSpread: 0.001, reloadDur: 2.2, auto: false, falloff: null, blast: 1, pvp: [80, 1.5, null] } },
+ { id: 'rocket_quad', name: 'QUAD SCRIBBLER', hint: '4 tubes · rocket hose', desc: 'Four barrels of rapid-fire bad decisions. Smaller booms, way more of them.', ink: 0, scale: 0.95, bars: [60, 75, 85, 40],
+   stats: { magSize: 4, reserve: 8, maxReserve: 12, interval: 0.45, damage: 50, headMul: 1, pellets: 1, spread: 0.01, adsSpread: 0.004, reloadDur: 3, auto: false, falloff: null, blast: 0.65, pvp: [50, 1.2, null] } },
+ { id: 'rocket_nuke', name: 'THE ERASER', hint: 'one shot · delete everything', desc: 'A forbidden weapon of mass erasure. Fire once, then admire the crater.', ink: 1, scale: 1.1, bars: [100, 10, 15, 70],
+   stats: { magSize: 1, reserve: 2, maxReserve: 3, interval: 2.2, damage: 140, headMul: 1, pellets: 1, spread: 0.002, adsSpread: 0.0008, reloadDur: 3.4, auto: false, falloff: null, blast: 1.7, pvp: [140, 1.8, null] } }
 ]};
 
-var SLOT_LABEL = { rifle: 'RIFLE', shotgun: 'SHOTGUN', sniper: 'SNIPER', katana: 'BLADE', explosive: 'ROCKET' };
+var SLOT_LABEL = { rifle: 'RIFLE', shotgun: 'SHOTGUN', sniper: 'SNIPER', katana: 'BLADE', rocket: 'ROCKET' };
 
 /* ---------------- characters ---------------- */
 var CHARACTERS = [
@@ -188,6 +192,28 @@ function weaponById(slot, id) {
 
 /* ---------------- changelog data ---------------- */
 var CHANGELOG = [
+  { v: '3.1.0', date: '2026-09-11', title: 'New Maps, Slot-5 Bazooka & Laser Sights',
+    sections: {
+      Added: [
+        'NEW MAP — DOODLE ROOFS: a dusk city block with four rooftops linked by plank bridges, water towers, a billboard, a fire escape and a blinking antenna nest',
+        'NEW MAP — DOODLE CASTLE: ramparts with wall walks and corner towers, a gatehouse, a moat, a haunted graveyard, a torch-lit keep and a waving flag',
+        'The rocket launcher is a real 5th weapon now: press 5 (or scroll) for the DOODLE BAZOOKA, with ADS, reloading, ammo pickups and a proper 3D model — F still quick-fires it from any weapon',
+        '3 rocket loadout variants: DOODLE BAZOOKA (classic), QUAD SCRIBBLER (4-tube rocket hose) and THE ERASER (one giant crater)',
+        'Laser sights on every gun — a red beam and dot help you aim from the hip; press L to toggle',
+        'Explosive barrels: orange barrels detonate when shot (or caught in a blast) and chain-react with each other',
+        'Rockets and grenades now share one net-safe projectile system, so rocket hits, kills and the kill feed work in FFA without extra lag'
+      ],
+      Changed: [
+        'Doodle Balloon retired — the game now has 5 maps: District, Jungle, Harbor, Roofs and Castle (old Balloon picks fall back to District)',
+        'Barrels take a couple of shots to pop instead of one, since they explode now'
+      ],
+      Fixed: [
+        'The loadout preview for the rocket slot showed a blade — it now shows the actual launcher',
+        'Remote players holding the bazooka render a chunky tube instead of a rifle, and no longer strike the katana pose',
+        'Rocket kills are labeled ROCKET in the kill feed instead of GRENADE'
+      ]
+    }
+  },
   { v: '3.0.2', date: '2026-09-11', title: 'True Aim, Lightsaber & Rocket Fixes',
     sections: {
       Fixed: [
@@ -515,7 +541,7 @@ function redeemCode(raw) {
 
 /* ---------------- loadout store ---------------- */
 function defaultLoadout() {
-  return { rifle: 'rifle_classic', shotgun: 'shotgun_classic', sniper: 'sniper_classic', katana: 'katana_classic', explosive: 'explosive_rocket' };
+  return { rifle: 'rifle_classic', shotgun: 'shotgun_classic', sniper: 'sniper_classic', katana: 'katana_classic', rocket: 'rocket_classic' };
 }
 function getLoadout() {
   var l = store.get('doodle_loadout', null);
@@ -526,14 +552,13 @@ function setLoadout(l) {
   store.set('doodle_loadout', l);
   /* Resolve full per-slot stats for the patched game to consume on match start */
   var stats = {};
-  ['rifle', 'shotgun', 'sniper', 'katana', 'explosive'].forEach(function (slot) {
+  ['rifle', 'shotgun', 'sniper', 'katana', 'rocket'].forEach(function (slot) {
     var found = weaponById(slot, l[slot]);
     if (!found.def) return;
     var s = Object.assign({}, found.def.stats);
     s.name = found.def.name;
     s.hint = found.def.hint;
-    if (slot !== 'explosive') { s.ink = found.def.ink; s.scale = found.def.scale; }
-    else { s.ink = found.def.ink; }
+    s.ink = found.def.ink; s.scale = found.def.scale;
     /* the in-game blade reads s.saber to become a lightsaber — without this
        the flag never left the menu and every blade rendered as a katana */
     if (found.def.saber) s.saber = true;
@@ -853,7 +878,7 @@ function renderLoadout() {
     '<h1>LOADOUT</h1>' +
     '<h2>pick your instruments of erasure</h2>' +
     '<div class="dd-slots">' +
-      ['rifle', 'shotgun', 'sniper', 'katana', 'explosive'].map(function (s) {
+      ['rifle', 'shotgun', 'sniper', 'katana', 'rocket'].map(function (s) {
         return '<button type="button" class="dd-slot' + (loadoutSlot === s ? ' on' : '') + '" data-slot="' + s + '">' + SLOT_LABEL[s] + '</button>';
       }).join('') +
     '</div>' +
@@ -924,6 +949,7 @@ function statLine(slot, w) {
   if (slot === 'katana') return 'DMG <b>' + w.stats.damage + '</b> · SWING <b>' + w.stats.slashDur.toFixed(2) + 's</b>';
   var s = w.stats;
   var rof = s.interval ? Math.round(60 / s.interval) + '/min' : '—';
+  if (slot === 'rocket') return 'BLAST <b>×' + s.blast + '</b> · MAG <b>' + s.magSize + '</b> · ROF <b>' + rof + '</b>';
   return 'DMG <b>' + s.damage + (s.pellets > 1 ? '×' + s.pellets : '') + '</b> · MAG <b>' + s.magSize + '</b> · ROF <b>' + rof + '</b>';
 }
 
@@ -1111,11 +1137,40 @@ function buildSaber(T, def, i, M) {
   outline(T, g, M.line);
   return g;
 }
+function buildRocket(T, def, i, M) {
+  var g = new T.Group(), acc = accentMat(T, def);
+  var quad = (i === 1), big = (i === 2);
+  var rad = big ? 0.13 : 0.1;
+  if (quad) {
+    for (var qx = -1; qx <= 1; qx += 2) for (var qy = -1; qy <= 1; qy += 2)
+      cy(T, g, M.dark, 0.055, 0.055, 0.85, qx * 0.07, qy * 0.07, -0.08, Math.PI / 2);
+    bx(T, g, acc, 0.3, 0.3, 0.1, 0, 0, -0.48);
+    bx(T, g, acc, 0.3, 0.3, 0.1, 0, 0, 0.3);
+    cy(T, g, M.glow, 0.02, 0.05, 0.1, -0.07, 0.07, -0.55, Math.PI / 2);
+  } else {
+    cy(T, g, M.body, rad, rad, 1.0, 0, 0, -0.08, Math.PI / 2);
+    cy(T, g, M.dark, rad + 0.015, rad + 0.015, 0.1, 0, 0, -0.56, Math.PI / 2);
+    cy(T, g, M.dark, rad + 0.02, rad + 0.02, 0.16, 0, 0, 0.38, Math.PI / 2);
+    bx(T, g, acc, 0.06, 0.05, 0.5, 0, rad + 0.01, -0.08);
+    cy(T, g, acc, rad + 0.004, rad + 0.004, 0.06, 0, 0, -0.28, Math.PI / 2);
+    cy(T, g, acc, rad + 0.004, rad + 0.004, 0.06, 0, 0, 0.12, Math.PI / 2);
+    cy(T, g, M.glow, 0.018, rad * 0.7, 0.16, 0, 0, -0.64, Math.PI / 2);
+  }
+  bx(T, g, M.dark, 0.07, 0.15, 0.09, 0, -0.17, 0.12, 0.3);
+  bx(T, g, M.wood, 0.1, 0.1, 0.24, 0, -0.1, 0.44);
+  var topY = quad ? 0.2 : rad + 0.04;
+  bx(T, g, M.dark, 0.04, 0.08, 0.1, 0, topY, -0.32);
+  var dot = new T.Mesh(new T.SphereGeometry(0.02, 10, 8), M.glow);
+  dot.position.set(0, topY + 0.03, -0.32); g.add(dot);
+  outline(T, g, M.line);
+  return g;
+}
 function buildModel(T, slot, def, idx) {
   var M = mats(T);
   var g = slot === 'rifle' ? buildRifle(T, def, idx, M)
     : slot === 'shotgun' ? buildShotgun(T, def, idx, M)
     : slot === 'sniper' ? buildSniper(T, def, idx, M)
+    : slot === 'rocket' ? buildRocket(T, def, idx, M)
     : buildBlade(T, def, idx, M);
   g.scale.setScalar(def.scale || 1);
   return g;

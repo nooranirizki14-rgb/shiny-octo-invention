@@ -1,5 +1,28 @@
 # Changelog
 
+## [3.1.0] — New Maps, Slot-5 Bazooka & Laser Sights
+
+### Added — maps
+- **NEW MAP: DOODLE ROOFS** (`roofs`) — a dusk city block: four rooftops linked by plank bridges, water towers, a billboard, a two-flight fire escape, a blinking antenna nest, parked cars, street lamps and clotheslines. Solo + arena (FFA) support with 12 spawns, 5 sniper perches, 8 pickups, 14 arena spawns
+- **NEW MAP: DOODLE CASTLE** (`castle`) — ramparts with walkable wall walks and four corner towers, a gatehouse with portcullis, a moat, a torch-lit keep with waving flag, a courtyard well, hay bales, weapon rack, banners, dead trees and a tiny graveyard. Same spawn/pickup counts as Roofs
+- **Doodle Balloon retired** — the public list is now District / Jungle / Harbor / Roofs / Castle. Stored or remotely-sent `balloon` values fall back to District through the existing map guards (no protocol change)
+
+### Added — rocket launcher as slot 5
+- **The bazooka is a real 5th weapon**: press `5` or scroll to it — full ADS, reload animation, ammo HUD slot, ammo pickups and a chunky 3D tube model. **F still quick-fires a rocket from any weapon**, now spending the launcher's own mag/reserve
+- **3 loadout variants**: DOODLE BAZOOKA (classic 1-tube), QUAD SCRIBBLER (4-round rocket hose, smaller blasts) and THE ERASER (one giant ×1.7 crater). New `blast` stat flows through `doodle_loadout_stats`
+- Rockets ride the **grenade netcode path** (same projectile sim + owner-authority damage), so FFA hits, kills and the kill feed just work — no protocol bump (`Qt` untouched). New `rocket` entries in the damage validator, kill-feed labels and remote-player weapon visuals (remotes render a tube, keep gun pose)
+- Kills by rocket are labeled **ROCKET** in the feed (was: GRENADE)
+
+### Added — lasers & fun
+- **Laser sights on every gun**: red emitter + beam + tip dot, on by default, **L toggles** (remembered in `localStorage`). The katana stays clean
+- **Explosive barrels**: orange barrels detonate when shot or caught in a blast (bigger boom, enemy + self damage, prop kick) and **chain-react** with each other — on every client through the existing breakable sync
+- Barrel HP raised 15 → 40 so a single stray bullet doesn't set them off
+
+### Fixed
+- Loadout preview for the rocket slot rendered a blade — now builds the actual launcher (distinct classic/quad/eraser models + thumbnails)
+- Remote players with the bazooka equipped showed a rifle and struck the katana pose — fixed (tube model + gun pose)
+- `rocket-launcher.js` slimmed from a parallel projectile sim into an integration layer (F quick-fire + HUD + reserve trickle) — no more double physics
+
 ## [3.0.2] — True Aim, Lightsaber & Rocket Fixes
 
 ### Fixed — aiming & sights

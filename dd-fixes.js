@@ -1,5 +1,5 @@
 /* ============================================================
-   Doodle District — dd-fixes.js v3.0.2
+   Doodle District — dd-fixes.js v3.1.0
    Runtime patch pack. The game bundle (game.?.js) exposes everything it
    needs on window.__game, so these fixes ride on top without touching
    the minified engine:
@@ -23,6 +23,11 @@
      7. MULTIPLAYER — host retries once when the signalling server
         times out; failures get an actionable hint appended to the
         status line (same-version check, private-code tip, network tip).
+     8. FRAME SAFETY NET — every per-frame system is guarded so one
+        hitch shows a toast instead of black-screening; a render
+        watchdog reloads the map if drawing stalls mid-match.
+     9. LASER TOGGLE — press L to switch the gun laser sights on/off
+        (choice is remembered between visits).
    ============================================================ */
 (function () {
 'use strict';
@@ -55,6 +60,7 @@ function boot() {
   try { patchAnimatedGuard(); } catch (e) { log('animated-guard failed', e); }
   try { patchNet(); } catch (e) { log('net failed', e); }
   try { patchFrameSafety(); } catch (e) { log('frame-safety failed', e); }
+  try { patchLaserToggle(); } catch (e) { log('laser-toggle failed', e); }
   log('all patches applied');
 }
 
@@ -554,6 +560,31 @@ function patchFrameSafety() {
   } catch (e) {}
 
   log('frame safety on');
+}
+
+/* ---------------- 9. LASER TOGGLE ----------------
+   Every gun carries a red laser sight (built by the engine). L flips
+   window.__ddLaserOn, which the weapon update reads every frame. The
+   choice persists in localStorage; default is on. */
+function patchLaserToggle() {
+  try {
+    var saved = null;
+    try { saved = localStorage.getItem('doodle_laser'); } catch (e) {}
+    window.__ddLaserOn = saved !== '0';
+  } catch (e) { window.__ddLaserOn = true; }
+  document.addEventListener('keydown', function (e) {
+    try {
+      if (!e || e.code !== 'KeyL' || e.repeat) return;
+      var t = e.target;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+      window.__ddLaserOn = !window.__ddLaserOn;
+      try { localStorage.setItem('doodle_laser', window.__ddLaserOn ? '1' : '0'); } catch (err) {}
+      var msg = window.__ddLaserOn ? 'laser sights ON' : 'laser sights OFF';
+      if (window.__ddMenu && typeof window.__ddMenu.toast === 'function') window.__ddMenu.toast(msg);
+      else log(msg);
+    } catch (err) {}
+  });
+  log('laser toggle on');
 }
 
 /* go */
