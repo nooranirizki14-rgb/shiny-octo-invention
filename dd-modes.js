@@ -221,6 +221,11 @@ function topKills(ids) {
 }
 function broadcastState() {
   if (!H) return;
+  /* v3.2.1: prune long-dead walls host-side so the broadcast never grows */
+  try {
+    var cutoff = performance.now() - WALL_LIFE * 1000;
+    H.walls = H.walls.filter(function (w) { return (w[5] || 0) >= cutoff; });
+  } catch (e) {}
   var d = { m: H.m, now: performance.now(), walls: H.walls, wseq: H.wseq };
   if (H.m === 'koth') { d.pts = H.pts; d.hill = H.hill; }
   if (H.m === 'infected') { d.inf = H.inf; d.t = H.t; d.zero = H.zero; }
@@ -382,7 +387,7 @@ function syncMarkers(ids, color) {
     var want = {};
     (ids || []).forEach(function (id) { if (id !== myId()) want[id] = true; });
     Object.keys(markerMap).forEach(function (id) {
-      if (!want[id]) { try { scene.remove(markerMap[id]); } catch (e) {} delete markerMap[id]; }
+      if (!want[id]) { dropMarker(id); }
     });
     Object.keys(want).forEach(function (id) {
       if (markerMap[id]) return;
@@ -398,10 +403,21 @@ function syncMarkers(ids, color) {
       try {
         var p = playerPos(id);
         if (p) markerMap[id].position.set(p.x, p.y + 2.2, p.z);
-        else { scene.remove(markerMap[id]); delete markerMap[id]; }
+        else { dropMarker(id); }
       } catch (e) {}
     });
   } catch (e) {}
+}
+/* v3.2.1: marker removal that also frees the GPU geometry/material */
+function dropMarker(id) {
+  try {
+    var g = game();
+    var m = markerMap[id];
+    if (!m) { delete markerMap[id]; return; }
+    if (g && g.ctx && g.ctx.scene) { try { g.ctx.scene.remove(m); } catch (e) {} }
+    try { m.geometry.dispose(); m.material.dispose(); } catch (e2) {}
+  } catch (e3) {}
+  delete markerMap[id];
 }
 function setVig(kind) {
   try {
@@ -414,8 +430,11 @@ function clearModeFx() {
   try {
     var g = game();
     if (g && g.ctx && g.ctx.scene) {
-      ringObjs.forEach(function (m) { try { g.ctx.scene.remove(m); } catch (e) {} });
-      Object.keys(markerMap).forEach(function (id) { try { g.ctx.scene.remove(markerMap[id]); } catch (e) {} });
+      ringObjs.forEach(function (m) {
+        try { g.ctx.scene.remove(m); } catch (e) {}
+        try { m.geometry.dispose(); m.material.dispose(); } catch (e2) {}
+      });
+      Object.keys(markerMap).forEach(function (id) { dropMarker(id); });
     }
   } catch (e) {}
   ringObjs = []; markerMap = {};
@@ -620,9 +639,14 @@ function sortWallsLocked() {
       if (b[i] && b[i].kind === 'wall') { first = i; break; }
     }
     if (first === -1) return;
-    var tail = b.splice(first).filter(function (e) { return e && e.kind === 'wall'; });
+    /* v3.2.1: splice() takes everything after `first` — keep non-wall entries
+       (they used to be dropped, shifting brk-sync indices for everyone). */
+    var removed = b.splice(first);
+    var keep = [], tail = [];
+    removed.forEach(function (e) { (e && e.kind === 'wall' ? tail : keep).push(e); });
     tail.sort(function (a, c) { return (a._hid || 0) - (c._hid || 0); });
-    for (var j = 0; j < tail.length; j++) { b.push(tail[j]); tail[j].id = b.length - 1; }
+    for (var j = 0; j < keep.length; j++) { b.push(keep[j]); keep[j].id = b.length - 1; }
+    for (var k = 0; k < tail.length; k++) { b.push(tail[k]); tail[k].id = b.length - 1; }
   } catch (e) {}
 }
 function reconcileWalls(hostWalls) {
@@ -640,7 +664,9 @@ function reconcileWalls(hostWalls) {
         removePrediction();
       }
       if (!have[w[0]]) {
-        insertWallReal(w[0], w[1], w[2], w[3], w[4] === 'x' ? 'x' : 'z', w[5], w[6] || 0);
+        /* v3.2.1: stamp the LOCAL clock — host/client performance.now()
+           clocks are incomparable, so host t0s broke expiry. */
+        insertWallReal(w[0], w[1], w[2], w[3], w[4] === 'x' ? 'x' : 'z', performance.now(), w[6] || 0);
         changed = true;
       }
     }
@@ -650,7 +676,9 @@ function reconcileWalls(hostWalls) {
 }
 function expireWalls(hostNow, useHostClock) {
   try {
-    var now = (useHostClock && hostNow != null) ? hostNow : performance.now();
+    /* v3.2.1: _t0 is always stamped on the local clock now — expire locally
+       (comparing a host clock against local t0s expired walls at random). */
+    var now = performance.now();
     wallEntries().forEach(function (e) {
       if (e.alive && e._t0 && now - e._t0 > WALL_LIFE * 1000) killWallEntry(e);
     });
@@ -863,7 +891,7 @@ function soloKothTick() {
       }
     }
     if (inside && !contested) {
-      soloKothPts++;
+      soloKothPts += 0.5; /* v3.2.1: 500ms poll → 1 pt/sec, like online */
       if (soloKothPts >= KOTH_PTS) {
         soloKothPts = 0;
         toast('\uD83D\uDC51 HILL HELD \u2014 KOTH CHAMPION! (+150 XP)', 4);
@@ -878,7 +906,7 @@ function soloKothTick() {
     }
     lastMode = 'koth';
     var pp = {};
-    pp[myId()] = soloKothPts;
+    pp[myId()] = Math.floor(soloKothPts);
     updateModeHud({ m: 'koth', pts: pp });
   } catch (e) {}
 }
@@ -950,7 +978,8 @@ function boot() {
   window.addEventListener('dd-match-end', function () {
     try { onMatchEndNatural(); } catch (e) {}
     try { clearModeFx(); } catch (e) {}
-    pendingPred = null;
+    /* v3.2.1: actually remove the predicted mesh+collider (was: leaked) */
+    try { removePrediction(); } catch (e) {}
   });
 
   /* B = sketch-wall (the engine ignores B, no capture needed) */

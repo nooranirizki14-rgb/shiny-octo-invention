@@ -161,7 +161,10 @@ function radarPing() {
     (function pulse() {
       var k = (performance.now() - t0) / 3500;
       if (k >= 1) {
-        marks.forEach(function (m) { try { scene.remove(m); } catch (e) {} });
+        marks.forEach(function (m) {
+          try { scene.remove(m); } catch (e) {}
+          try { m.geometry.dispose(); m.material.dispose(); } catch (e2) {}
+        });
         return;
       }
       var s = 1 + 0.35 * Math.sin(performance.now() / 90);
@@ -459,8 +462,8 @@ function doEmote() {
     var P = g && g.player;
     if (!P || !P.alive) return false;
     emoteCdUntil = now + 3000;
-    /* happy little hop */
-    try { if (P.vel) P.vel.y = Math.max(P.vel.y || 0, 4.2); } catch (e) {}
+    /* happy little hop (v3.2.1: velocity lives on body, P.vel never existed) */
+    try { if (P.body && P.body.vel) { P.body.vel.y = Math.max(P.body.vel.y || 0, 4.2); P.body.onGround = false; } } catch (e) {}
     /* chalk stamp on the floor */
     try {
       if (T && g.ctx && g.ctx.scene && P.center) {
@@ -475,7 +478,11 @@ function doEmote() {
           var t0 = performance.now();
           (function fade() {
             var k = (performance.now() - t0) / 6000;
-            if (k >= 1) { try { g.ctx.scene.remove(m); } catch (e) {} return; }
+            if (k >= 1) {
+              try { g.ctx.scene.remove(m); } catch (e) {}
+              try { m.geometry.dispose(); mat.dispose(); } catch (e2) {}
+              return;
+            }
             try { mat.opacity = k < 0.7 ? 1 : 1 - (k - 0.7) / 0.3; } catch (e) {}
             requestAnimationFrame(fade);
           })();
@@ -518,6 +525,8 @@ function applyInkSkins() {
         if (w._ddLaserDot && w._ddLaserDot.material && w._ddLaserDot.material.color) {
           w._ddLaserDot.material.color.setHex(skinsOn ? col : 0xff2222);
         }
+        /* v3.2.1: remember the tinted ink so the poll only re-tints on change */
+        w._ddSkinTint = col;
         /* one accent stripe on the body — the actual "skin" */
         if (!w._ddAccent) {
           var stripe = new T.Mesh(
@@ -790,6 +799,18 @@ function detectWin() {
     return mine >= 0 && mine >= best;
   } catch (e) { return false; }
 }
+/* v3.2.1: re-seat big-heads only when the peer set (or flag) changes,
+   instead of forcing a full rescale pass every 500ms. */
+var lastHeadKey = '';
+function bigHeadKey() {
+  try {
+    var g = game();
+    var ids = '';
+    if (g && g.remote && typeof g.remote.keys === 'function') ids = Array.from(g.remote.keys()).join(',');
+    var ne = (g && g.enemies && g.enemies.enemies) ? g.enemies.enemies.length : 0;
+    return (getMutators().bighead ? 'B' : 'b') + '|' + ids + '|' + ne;
+  } catch (e) { return 'x'; }
+}
 function pollMatch() {
   var g = game();
   var st = '', mode = matchMode();
@@ -803,11 +824,32 @@ function pollMatch() {
   }
   /* feed element is rebuilt with the HUD — (re)attach cheaply */
   try { watchFeed(); } catch (e) {}
-  /* fresh spawns need their (big) heads — re-seat while playing */
+  /* fresh spawns need their (big) heads — re-seat only on peer-set change */
   try {
     if (st === 'play') {
-      window.__ddBigHeadApplied = -1;
+      var hk = bigHeadKey();
+      if (hk !== lastHeadKey) { lastHeadKey = hk; window.__ddBigHeadApplied = -1; }
       applyMutators();
+    }
+  } catch (e) {}
+  /* stuck-nade self-heal (v3.2.1): a nade whose fuse expired seconds ago but
+     never detonated aborts the player update every frame (frozen gun — the
+     "stops mid explode then can't shoot" class). Sweep it + cap runaways. */
+  try {
+    var P = g && g.player;
+    if (P && P.nades && P.nades.length) {
+      var scn = g.ctx && g.ctx.scene;
+      for (var ni = P.nades.length - 1; ni >= 0; ni--) {
+        var nd = P.nades[ni];
+        if (nd && typeof nd.fuse === 'number' && nd.fuse < -5) {
+          try { if (scn && nd.mesh) scn.remove(nd.mesh); } catch (e) {}
+          P.nades.splice(ni, 1);
+        }
+      }
+      while (P.nades.length > 12) {
+        var drop = P.nades.shift();
+        try { if (scn && drop && drop.mesh) scn.remove(drop.mesh); } catch (e) {}
+      }
     }
   } catch (e) {}
   /* re-apply cheap per-poll visuals (new weapons after loadout swap) */
@@ -818,7 +860,8 @@ function pollMatch() {
       var ws = g && g.player && g.player.weapons;
       if (ws) for (var i = 0; i < ws.length; i++) {
         var w = ws[i];
-        if (w && w._ddLaser && w._ddLaser.material && !w._ddSkinTint) { w._ddSkin = false; }
+        /* v3.2.1: re-tint only when the ink actually changed (was: every poll) */
+        if (w && w._ddLaser && w._ddLaser.material && w._ddSkinTint !== weaponInk(w)) { w._ddSkin = false; }
       }
     }
   } catch (e) {}

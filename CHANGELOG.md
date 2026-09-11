@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.2.1] — Grenade-bug hunt + bugfix pass
+- **Reported bug investigated end-to-end**: "throw grenade → big explosion → stops mid-explode → can't shoot". Audited the full engine path (throw → fuse → bounce → `boom` → damage → die → respawn/game-over), all 5 bundle edits, all 8 addons, overlays/CSS and input bindings — no defect found that freezes the loop (single exceptions can't: rAF reschedules first, and the frame-safety net converts per-frame throws into toasts). Most likely causes: dying to your own blast (solo = run over, FFA = click to respawn), or a device hitch on the 142-particle burst.
+- **New stuck-nade self-heal** (`dd-party.js`): the 500ms match poll now sweeps live nades whose fuse expired 5s+ ago without detonating (the exact "stops mid explode + frozen gun" failure class) and caps runaway nade counts at 12
+- **Frame-safety net extended** (`dd-fixes.js`): `player.reset` and `player.switchTo` are now guarded like the per-frame updates, so a respawn/switch hiccup shows a toast instead of leaving the player half-reset or weaponless
+- **Sketch-wall sync fixes** (`dd-modes.js`): wall sorting no longer drops non-wall breakables after the first wall (which shifted `brk` indices); wall expiry now uses the local clock on both ends (host/client `performance.now()` clocks are incomparable, so online walls expired at random); the host prunes dead walls so the `ddmode` broadcast never grows; match end now actually removes the predicted wall (was: leaked mesh + invisible collider)
+- **Solo KOTH rate fixed**: banked 1 point per 500ms poll (win in ~22s) — now 1 point/sec like online (45s to crown)
+- **GG emote hop fixed** (`dd-party.js`): it wrote `P.vel`, which doesn't exist — now hops via `P.body.vel`
+- **GPU leak plugs**: radar ping marks, mode markers, KOTH ring, skywriter planes and GG floor stamps now dispose their geometries/materials on removal
+- **Perf churn cuts**: laser re-tint only runs when a gun's ink actually changes (was: every poll); big-head re-seating only runs when the peer set changes (was: every 500ms)
+
 ## [3.2.0] — Party Pack Phase 1: Streaks, Stats, Mutators & Challenges
 
 ### Added — party tab + stats tab

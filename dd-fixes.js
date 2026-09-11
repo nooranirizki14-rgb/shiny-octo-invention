@@ -484,6 +484,10 @@ function patchFrameSafety() {
   try {
     if (g.player) {
       guardUpdate(g.player, 'update', 'player');
+      /* v3.2.1: respawn + weapon-switch join the safety net — a hiccup here
+         used to leave the player half-reset or weaponless with no toast */
+      guardUpdate(g.player, 'reset', 'player reset');
+      guardUpdate(g.player, 'switchTo', 'weapon switch');
       guardUpdate(g.player, 'idleCam', 'menu camera');
     }
     if (g.enemies) guardUpdate(g.enemies, 'update', 'enemies');

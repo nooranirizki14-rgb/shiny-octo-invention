@@ -247,7 +247,12 @@ function planesTick(dt) {
       p.m.position.x += 30 * dt;
       p.m.position.y += Math.sin(performance.now() / 400) * 0.02;
       p.life -= dt;
-      if (p.life <= 0) { try { scene.remove(p.m); } catch (e) {} planes.splice(i, 1); }
+      /* v3.2.1: free the plane geometries/materials instead of leaking them */
+      if (p.life <= 0) {
+        try { scene.remove(p.m); } catch (e) {}
+        try { p.m.traverse(function (o) { if (o.isMesh) { o.geometry.dispose(); o.material.dispose(); } }); } catch (e2) {}
+        planes.splice(i, 1);
+      }
     }
   } catch (e) {}
 }
