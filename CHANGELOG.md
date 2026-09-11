@@ -1,11 +1,16 @@
 # Changelog
 
-## [3.0.1] — Fix: Slow & Failing Startup
+## [3.0.1] — Fix: Blank Screen, Doodle Bounce & Startup
+
+### Fixed — maps & gameplay
+- **DOODLE BOUNCE now renders.** The balloon houses crashed the level builder partway through, so the map came out completely empty — this was the "new map shows nothing". Balloon houses, trampolines and big air all work now
+- **DOODLE BOUNCE now works in SOLO.** It had no enemy spawn points, sniper perches or pickups, so waves had nowhere to spawn from. Added 15 spawns, 6 sniper perches and 10 pickup points
+- **Multiplayer death camera** now watches your killer for 3 seconds and then hands the camera back, instead of holding it for the whole respawn timer
 
 ### Removed
 - **The loading screen is gone completely.** No spinner, no status text, no error screens — nothing between you and the game. The page now goes straight to the main menu. The engine ships with the game, so there is nothing left to wait for
 
-### Fixed
+### Fixed — startup
 - **The game actually starts now.** A stray bracket in the game bundle was a hard syntax error, so the whole game script failed to run and the page stayed empty no matter what. This was the real cause of the blank screen
 - **Loading no longer fails on most networks.** The 3D engine and the multiplayer library now ship with the game instead of being downloaded from third-party CDNs on every visit. Ad-blockers, firewalls, school/work networks and plain old offline no longer stop the game from starting — startup used to sit for 20 seconds and then always fail with "download failed"
 - **No more 20-second wait.** Startup used to stall on a fixed 20-second timer before giving up; that timer is gone entirely
@@ -16,6 +21,11 @@
 
 ### Changed
 - The game can now be played fully offline
+- **No emoji anywhere in the UI** — the lock emoji is gone and the remaining symbols (stars, emblems, arrows) are forced to render as flat line icons in the page's ink colour, never as colour emoji
+
+### Already in place (verified, not re-built)
+- **Tutorial**, **Supabase save sync**, **RANKS leaderboard**, **Doodle Harbor rebuild**, **Doodle Skyline replaced by Doodle Bounce**, **Rocket Launcher** (F key, 7% self-damage) and the **Boom character** (3% self-damage, +20% explosive) all already existed and were checked working rather than rewritten
+- Version numbering is already clean and sequential (1.0.0 → 3.0.1) and matches between the in-game changelog and this file
 
 ## [3.0.0] — Final Big Update
 
