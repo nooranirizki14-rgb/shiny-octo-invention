@@ -15,9 +15,11 @@ A static browser game ("Doodle District") built with vanilla HTML/CSS/JS + Three
   jsdelivr/unpkg CDNs; localStorage `dd_cdn`, default `local`)
 - `vendor/` — bundled three.js + PeerJS (with their licenses). Keep the paths
   in the index.html import map and the `?v=` in sync when upgrading.
-- `boot.js` — boot loader + error overlay (classic script, runs first). Shows a
-  loading screen instantly, diagnoses blank-page causes (file://, old browser,
-  no WebGL2, CDN blocked), watchdogs `window.__DD_gameBooted`.
+- `boot.js` — boot watchdog + error overlay (classic script, runs first).
+  There is deliberately no loading screen: it renders nothing during a normal
+  load and builds its overlay lazily, only on failure. Diagnoses blank-page
+  causes (file://, old browser, no WebGL2, engine files missing/blocked) and
+  watchdogs `window.__DD_gameBooted`.
 - `game.7LCERBLR.js` — the game engine (minified ES module, imports three).
   Sets `window.__DD_gameBooted=true` as its last step — do not remove.
 - `menu-system.js` — extended menu UI (tabs, loadout, profile, settings)

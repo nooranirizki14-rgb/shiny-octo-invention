@@ -17,8 +17,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" media="print" onload="this.media='all';this.onload=null"
       href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Caveat:wght@600&display=swap">
-<!-- Boot loader: loading screen + plain-language error overlay, so a failed
-     boot can never look like a blank page again. Must run first. -->
+<!-- Boot watchdog: renders nothing during a normal load. Only shows a
+     plain-language error overlay if the boot actually fails, so a broken
+     boot can never look like a blank page. Must run first. -->
 <script src="boot.js?v=3.0.1"></script>
 <!-- Import map for three.js. Injected by script (instead of a static tag) so
      the boot overlay can switch sources with one click. The choice lives in

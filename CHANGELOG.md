@@ -1,11 +1,13 @@
 # Changelog
 
-## [3.0.1] — Fix: Slow & Failing Loading Screen
+## [3.0.1] — Fix: Slow & Failing Startup
+
+### Removed
+- **The loading screen is gone.** No spinner, no "sharpening pencils…", nothing between you and the game. The engine now ships with the game, so startup is fast enough that the loading screen was just something in the way
 
 ### Fixed
-- **Loading no longer fails on most networks.** The 3D engine and the multiplayer library now ship with the game instead of being downloaded from third-party CDNs on every visit. Ad-blockers, firewalls, school/work networks and plain old offline no longer stop the game from starting — the loading screen used to sit for 20 seconds and then always fail with "download failed"
-- **The loading screen appears instantly.** It now paints as soon as the page starts, instead of waiting for every other script to download first
-- **Failures are reported in a fraction of a second, not 20 seconds.** Problems the loader can detect immediately (opening the file directly, no WebGL2, an outdated browser) are shown right away, and a failed download is explained the moment it happens instead of at the end of a fixed timeout
+- **Loading no longer fails on most networks.** The 3D engine and the multiplayer library now ship with the game instead of being downloaded from third-party CDNs on every visit. Ad-blockers, firewalls, school/work networks and plain old offline no longer stop the game from starting — startup used to sit for 20 seconds and then always fail with "download failed"
+- **Failures are reported in a fraction of a second, not 20 seconds.** Problems that can be detected immediately (opening the file directly, no WebGL2, an outdated browser) are shown right away, and a failed download is explained the moment it happens instead of at the end of a fixed timeout
 - Much less to download: the engine is now the minified build and is served gzipped — about 167 KB over the wire instead of ~1.3 MB
 - Reloading is near-instant: bundled libraries are cached by the browser for 30 days instead of being re-fetched every time
 - Web fonts no longer hold up the game — they load in the background, so a slow or blocked font server can't stall the loading screen
@@ -16,7 +18,7 @@
 - The game can now be played fully offline
 
 ### Kept
-- The plain-language error overlay from the original blank-screen fix: the game still can never fail silently to a blank page, and still diagnoses `file://`, missing WebGL2 and outdated browsers
+- The plain-language error message from the original blank-screen fix. It no longer shows during loading — it only appears if the game actually fails to start, so the game still can never fail silently to a blank page, and still diagnoses `file://`, missing WebGL2 and outdated browsers
 
 ## [3.0.0] — Final Big Update
 

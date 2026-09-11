@@ -1,7 +1,11 @@
 /* ============================================================
-   Doodle District — Boot loader & error overlay v3.0.1
-   - Shows a loading screen the instant the page starts parsing,
-     so a failure can NEVER look like a blank page again.
+   Doodle District — Boot error overlay v3.0.1
+   - There is NO loading screen: the engine ships with the game, so
+     a healthy boot is fast enough that a spinner was just noise in
+     front of the game. Nothing is drawn while loading.
+   - Nothing renders at all unless something actually goes wrong.
+     The overlay below is built lazily, only on failure, so a broken
+     boot still explains itself instead of leaving a blank page.
    - Runs its environment checks IMMEDIATELY (not after a timeout),
      and fails fast the moment the engine reports an error, so a
      broken boot takes ~a second to explain itself instead of 20s.
@@ -13,15 +17,14 @@
        * engine files unreachable (offline, ad-blocker, firewall)
        * any uncaught error while the game boots
    - Watchdogs the game module: the game sets window.__DD_gameBooted
-     as its very last step; if that flag never appears, this overlay
-     switches from "loading" to a diagnosis + [RETRY] button, plus a
-     one-click switch between the bundled copy of the 3D engine and
-     the jsdelivr / unpkg CDNs.
+     as its very last step; if that flag never appears, the overlay
+     appears with a diagnosis + [RETRY] button, plus a one-click
+     switch between the bundled copy of the 3D engine and the
+     jsdelivr / unpkg CDNs.
    Classic script, zero dependencies, runs before everything else.
    ============================================================ */
 (function () {
 'use strict';
-
 /* Keep in sync with the inline import-map injector in index.html */
 var CDN_KEY = 'dd_cdn';
 var BOOT_FLAG = '__DD_gameBooted';
@@ -32,7 +35,6 @@ var WATCHDOG_MS = 9000;
 var SOURCES = ['local', 'jsdelivr', 'unpkg'];
 var SOURCE_LABELS = { local: 'bundled copy', jsdelivr: 'jsDelivr CDN', unpkg: 'unpkg CDN' };
 var errors = [];
-
 function getCdn() {
   try {
     var v = localStorage.getItem(CDN_KEY);
@@ -46,7 +48,6 @@ function setCdn(name) {
    first, since that one cannot be blocked by a network or an ad-blocker. */
 function otherCdn() { return getCdn() === 'local' ? 'jsdelivr' : 'local'; }
 function sourceLabel(name) { return SOURCE_LABELS[name] || name; }
-
 /* ---------------- error capture (starts immediately) ---------------- */
 function note(source, message) {
   try {
@@ -64,7 +65,6 @@ function note(source, message) {
     scheduleFailFast();
   } catch (e) {}
 }
-
 /* Report a hard failure almost immediately, but on a short delay so several
    related errors (three.js + the game module) can be collected first. */
 var failFastTimer = null;
@@ -78,7 +78,6 @@ function scheduleFailFast() {
     }, 250);
   } catch (e) {}
 }
-
 window.addEventListener('error', function (ev) {
   try {
     if (ev && ev.target && ev.target !== window && (ev.target.src || ev.target.href)) {
@@ -90,7 +89,6 @@ window.addEventListener('error', function (ev) {
     }
   } catch (e) {}
 }, true);
-
 window.addEventListener('unhandledrejection', function (ev) {
   try {
     var r = ev && ev.reason;
@@ -98,7 +96,6 @@ window.addEventListener('unhandledrejection', function (ev) {
     note('promise', msg);
   } catch (e) {}
 }, true);
-
 /* ---------------- environment checks ---------------- */
 function isFileProtocol() {
   try { return window.location.protocol === 'file:'; } catch (e) { return false; }
@@ -121,11 +118,9 @@ function webgl2Available() {
     return true;
   } catch (e) { return false; }
 }
-
-/* ---------------- overlay UI ---------------- */
-var overlay = null, cardEl = null, statusEl = null, spinEl = null;
+/* ---------------- error overlay UI (built only on failure) ---------------- */
+var overlay = null;
 var finished = false;
-
 var CSS =
   '#dd-boot{position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;' +
   'background:#f6f3e6;padding:20px;box-sizing:border-box;transition:opacity .35s ease;}' +
@@ -136,9 +131,6 @@ var CSS =
   'box-shadow:6px 6px 0 rgba(26,48,192,.15);padding:28px 30px 26px;}' +
   '#dd-boot h1{font-size:52px;margin:0;letter-spacing:3px;line-height:1;}' +
   '#dd-boot h2{font-size:24px;margin:6px 0 4px;font-weight:normal;opacity:.85;}' +
-  '#dd-boot .dd-boot-spin{font-size:44px;display:inline-block;animation:ddbootspin 1.1s linear infinite;margin:10px 0 2px;}' +
-  '@keyframes ddbootspin{to{transform:rotate(360deg);}}' +
-  '#dd-boot .dd-boot-status{font-size:21px;margin:8px 0 0;min-height:28px;}' +
   '#dd-boot .dd-boot-err{text-align:left;font-size:19px;line-height:1.45;background:rgba(208,32,48,.07);' +
   'border:2.5px dashed #d02030;border-radius:10px;padding:10px 16px;margin:12px 0 4px;}' +
   '#dd-boot .dd-boot-err b{color:#d02030;}' +
@@ -152,12 +144,11 @@ var CSS =
   '#dd-boot summary{cursor:pointer;font-size:18px;}' +
   '#dd-boot pre{white-space:pre-wrap;word-break:break-word;background:rgba(26,48,192,.06);' +
   'border-radius:8px;padding:8px 12px;max-height:180px;overflow:auto;font-size:14px;}';
-
 function esc(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
-
+/* Built lazily: nothing is inserted into the page unless the boot fails. */
 function buildOverlay() {
   if (overlay) return;
   try {
@@ -165,27 +156,18 @@ function buildOverlay() {
     st.id = 'dd-boot-css';
     st.textContent = CSS;
     (document.head || document.documentElement).appendChild(st);
-
     overlay = document.createElement('div');
     overlay.id = 'dd-boot';
     overlay.innerHTML =
       '<div class="dd-boot-card">' +
         '<h1>DOODLE DISTRICT</h1>' +
-        '<h2 id="dd-boot-sub">loading…</h2>' +
-        '<div class="dd-boot-spin" id="dd-boot-spin">✎</div>' +
-        '<div class="dd-boot-status" id="dd-boot-status">sharpening pencils…</div>' +
+        '<h2 id="dd-boot-sub"></h2>' +
         '<div id="dd-boot-body"></div>' +
       '</div>';
     (document.body || document.documentElement).appendChild(overlay);
-    cardEl = overlay.firstChild;
-    statusEl = document.getElementById('dd-boot-status');
-    spinEl = document.getElementById('dd-boot-spin');
   } catch (e) {}
 }
-
-function setStatus(t) { try { if (statusEl) statusEl.textContent = t; } catch (e) {} }
 function setSub(t) { try { var s = document.getElementById('dd-boot-sub'); if (s) s.textContent = t; } catch (e) {} }
-
 function diagnosticsText() {
   var lines = [];
   lines.push('time: ' + new Date().toISOString());
@@ -205,14 +187,11 @@ function diagnosticsText() {
   }
   return lines.join('\n');
 }
-
 function showError(title, html) {
   if (finished) return;
   buildOverlay();
   try {
-    if (spinEl) spinEl.style.display = 'none';
     setSub(title);
-    setStatus('');
     var body = document.getElementById('dd-boot-body');
     if (body) {
       body.innerHTML =
@@ -233,7 +212,6 @@ function showError(title, html) {
     }
   } catch (e) {}
 }
-
 function finish() {
   if (finished) return;
   finished = true;
@@ -248,11 +226,9 @@ function finish() {
     }, 400);
   } catch (e) {}
 }
-
 function booted() {
   try { return window[BOOT_FLAG] === true; } catch (e) { return false; }
 }
-
 /* ---------------- boot sequence ---------------- */
 function engineFailed() {
   for (var i = 0; i < errors.length; i++) {
@@ -264,7 +240,6 @@ function engineFailed() {
   }
   return false;
 }
-
 /* Checks that are true or false the instant the page loads — there is no point
    making anyone stare at a spinner for these. Returns true if it showed one. */
 function preflight() {
@@ -274,7 +249,6 @@ function preflight() {
   }
   return false;
 }
-
 function watchdog() {
   if (booted()) { finish(); return; }
   if (isFileProtocol()) {
@@ -313,68 +287,27 @@ function watchdog() {
     'Hit <b>RETRY</b>, or switch the engine source below. ' +
     (typeof window.Peer !== 'function' ? '<br><br>Note: the multiplayer library also failed to load, which points at a missing or blocked file.' : ''));
 }
-
-/* status flavor while waiting */
-var statusTimer = null;
-function startStatusRotation() {
-  var msgs = ['sharpening pencils…', 'loading the 3D engine…', 'unfolding the paper…', 'inking the district…'];
-  var i = 0;
-  try {
-    statusTimer = setInterval(function () {
-      if (finished || booted()) { if (statusTimer) clearInterval(statusTimer); return; }
-      i = (i + 1) % msgs.length;
-      /* once the game object exists we are past downloading and into starting up */
-      try {
-        if (window.__game && window.__game.game) setStatus('starting the game…');
-        else setStatus(msgs[i]);
-      } catch (e) { setStatus(msgs[i]); }
-    }, 2500);
-  } catch (e) {}
-}
-
 function boot() {
-  buildOverlay();
+  /* Nothing is drawn here on purpose: no loading screen. We just watch, and
+     only put something on screen if the boot actually fails. */
   try { window.addEventListener('dd-game-booted', finish); } catch (e) {}
   /* Fatal environment problems are known right now — report them instantly
-     instead of pretending to load for the full watchdog period. */
+     instead of waiting out the watchdog period. */
   if (preflight()) return;
-  startStatusRotation();
   var poll = setInterval(function () {
-    try { if (booted()) { clearInterval(poll); if (statusTimer) clearInterval(statusTimer); finish(); } }
+    try { if (booted()) { clearInterval(poll); finish(); } }
     catch (e) {}
   }, 250);
   setTimeout(function () {
     try {
-      if (booted()) { clearInterval(poll); if (statusTimer) clearInterval(statusTimer); finish(); }
+      if (booted()) { clearInterval(poll); finish(); }
       else watchdog();
     } catch (e) { try { watchdog(); } catch (e2) {} }
   }, WATCHDOG_MS);
 }
-
-/* Paint the loading screen NOW. We run in <head>, so <body> does not exist
-   yet — but <html> does, and appending there renders immediately. Waiting for
-   DOMContentLoaded meant waiting on every blocking script in <body> first,
-   which is exactly the "nothing happens for ages" everyone complained about.
-   Once <body> exists we move the overlay into it so it sits above the game. */
-buildOverlay();
-function reparentOverlay() {
-  try {
-    if (overlay && document.body && overlay.parentNode !== document.body) {
-      document.body.appendChild(overlay);
-    }
-  } catch (e) {}
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', function () {
-    reparentOverlay();
-    boot();
-  });
-} else {
-  reparentOverlay();
-  boot();
-}
-
+/* Start watching as early as possible so failures are caught even if they
+   happen before DOMContentLoaded — but without rendering anything. */
+boot();
 /* public API for debugging */
 window.__DDboot = {
   booted: booted,
@@ -385,5 +318,4 @@ window.__DDboot = {
   source: getCdn,
   useCdn: function (name) { setCdn(name); location.reload(); }
 };
-
 })();
