@@ -1,5 +1,22 @@
 # Changelog
 
+## [4.0.0] — Reset to the classic build (old-version look and gameplay)
+
+### Changed
+- **The game is back to the original look.** `game.7LCERBLR.js` and `style.A4A8BF44.css` are now byte-identical to the first uploaded build — the same one still served at `doodleshooter.vercel.app`. Confirmed by blob hash (`5103613b…` engine, `5446f6f1…` stylesheet), not by eye.
+- Main menu is the engine's own panel again: **DOODLE DISTRICT / a scribbled survival shooter**, START (solo · survive the waves), PLAY ONLINE (free for all · up to 10 players), the two-button map picker, the MOUSE + KEYBOARD / PS5 CONTROLLER control columns and the sensitivity / invert-Y / trackpad-mode / music settings row. No tab bar, no banner art, no overlay panels.
+- `index.html` keeps the offline-safe plumbing added in later versions: import map aimed at the vendored `three` (r170 — the exact revision the classic build requested from the CDN, so behaviour is unchanged), vendored PeerJS, non-blocking Google Fonts, `?v=` cache busting and Vercel-analytics guarded to `*.vercel.app`. These are invisible; they only stop the boot depending on a CDN being reachable.
+
+### Removed (all of v0.2 → v3.2.1's add-on layer)
+- `menu-system.js` + `menu-addon.css` — tab bar (PLAY / LOADOUT / PROFILE / PARTY / STATS / SETTINGS / CHANGELOG / CREDITS), 3D weapon preview, banner/emblem profile, XP, redeem codes
+- `dd-party.js`, `dd-modes.js`, `dd-bits.js`, `dd-fixes.js` — kill streaks, death recap, mutators, weather, gun-skins, GG emote, daily/weekly challenges, KOTH / Infected / Juggernaut, sketch-wall, hats, spar bots, RC buddy, skywriter, school bell, true-aim/ADS fixes, frame-safety net and the render watchdog
+- `tutorial.js` (coach marks), `rocket-launcher.js` (slot-5 bazooka HUD), `supabase-sync.js` (cloud save)
+- Extra maps and their sources: Doodle Harbor / Skyline / Roofs / Castle / School / Parkour (`maps/castle.js`, `maps/park.js`, `maps/school.js`) and `assets/banner-legend.jpg`
+- What remains playable is the classic set: **DOODLE DISTRICT + DOODLE JUNGLE**, rifle / shotgun / sniper / katana, solo waves and peer-to-peer FFA
+
+### Restoring any of it
+Nothing is lost — every removed feature lives in the history from `0095d80` (v0.2.0) to `f5e6821` (v3.2.1). To bring the modern build back, revert this commit, or cherry-pick a single layer (e.g. `dd-fixes.js` is load-order independent: drop the file back in and add one `<script>` tag to `index.html`).
+
 ## [3.2.1] — Grenade-bug hunt + bugfix pass
 - **Reported bug investigated end-to-end**: "throw grenade → big explosion → stops mid-explode → can't shoot". Audited the full engine path (throw → fuse → bounce → `boom` → damage → die → respawn/game-over), all 5 bundle edits, all 8 addons, overlays/CSS and input bindings — no defect found that freezes the loop (single exceptions can't: rAF reschedules first, and the frame-safety net converts per-frame throws into toasts). Most likely causes: dying to your own blast (solo = run over, FFA = click to respawn), or a device hitch on the 142-particle burst.
 - **New stuck-nade self-heal** (`dd-party.js`): the 500ms match poll now sweeps live nades whose fuse expired 5s+ ago without detonating (the exact "stops mid explode + frozen gun" failure class) and caps runaway nade counts at 12
